@@ -58,7 +58,6 @@ final readonly class MemoryMetricStorage implements MetricStorage
             };
 
             $this->updateIndex($indexKey, $storageKey, $expireAt);
-
         } catch (Throwable $e) {
             Log::error('Failed to store metric in memory', [
                 'key' => (string)$key,

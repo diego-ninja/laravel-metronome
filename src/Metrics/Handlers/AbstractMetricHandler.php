@@ -2,11 +2,8 @@
 
 namespace Ninja\Metronome\Metrics\Handlers;
 
-use Ninja\Metronome\Contracts\MetricHandler;
-use Ninja\Metronome\Contracts\MetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
-use Ninja\Metronome\Metrics\Handlers\Traits\HandlesMetricValues;
-use Ninja\Metronome\Metrics\Handlers\Validators\MetricValueValidator;
+use Ninja\Metronome\Metrics\Handlers\Contracts\MetricHandler;
 
 abstract class AbstractMetricHandler implements MetricHandler
 {

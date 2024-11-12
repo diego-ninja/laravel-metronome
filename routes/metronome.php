@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Support\Facades\Route;
 use Ninja\Metronome\Http\Controllers\MetronomeController;
 

@@ -15,5 +15,4 @@ interface StateStorage
     public function health(): array;
     public function pipeline(callable $callback): array;
     public function batch(array $operations): void;
-
 }
