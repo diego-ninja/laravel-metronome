@@ -19,12 +19,12 @@ final class AverageMetricValue extends AbstractMetricValue
 
     protected function validate(): void
     {
-        if (!isset($this->metadata['count']) || $this->metadata['count'] < 1) {
-            throw new InvalidArgumentException('Average count must be positive');
-        }
-
         if (!isset($this->metadata['sum'])) {
             throw new InvalidArgumentException('Average sum must be provided');
+        }
+
+        if (!isset($this->metadata['count']) || $this->metadata['count'] < 1) {
+            throw new InvalidArgumentException('Average count must be positive');
         }
 
         $calculatedAverage = $this->metadata['sum'] / $this->metadata['count'];
@@ -35,9 +35,12 @@ final class AverageMetricValue extends AbstractMetricValue
 
     public static function empty(): self
     {
-        return new self(0.0, 0.0, 1);
+        return new self(
+            value: 0.0,
+            sum: 0.0,
+            count: 1
+        );
     }
-
     public function sum(): float
     {
         return $this->metadata['sum'];

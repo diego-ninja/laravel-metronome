@@ -28,6 +28,11 @@ final class SummaryMetricValue extends AbstractMetricValue
 
     public static function empty(): self
     {
-        return new self(0.0, []);
+        return new self(
+            value: 0.0,
+            quantiles: [0.5],
+            count: 1,
+            sum: 0.0
+        );
     }
 }

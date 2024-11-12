@@ -11,6 +11,10 @@ final class Gauge extends AbstractMetricHandler
     {
         $this->validateOrFail($values);
 
+        if (empty($values)) {
+            return GaugeMetricValue::empty();
+        }
+
         usort($values, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
         $latest = reset($values);
 

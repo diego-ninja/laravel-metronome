@@ -19,6 +19,7 @@ use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Registry;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
+use Ninja\Metronome\Repository\Dto\Metric;
 use Throwable;
 
 final readonly class MetricAggregator
@@ -27,10 +28,23 @@ final readonly class MetricAggregator
 
     public function __construct(private MetricStorage $storage)
     {
-        $this->windows = collect(config("devices.observability.aggregation.windows", [
+        $this->windows = collect(config("metronome.aggregation.windows", [
             Aggregation::Realtime,
             Aggregation::Hourly
         ]));
+    }
+
+    /**
+     * @throws InvalidMetricException
+     */
+    public function collect(Metric $metric): void
+    {
+        $this->record(
+            name: $metric->name,
+            type: $metric->type,
+            value: $metric->value,
+            dimensions: $metric->dimensions
+        );
     }
 
     /**
@@ -187,7 +201,7 @@ final readonly class MetricAggregator
                         type: $type,
                         window: $window,
                         dimensions: $dimensions,
-                        prefix: config('devices.observability.prefix')
+                        prefix: config('metronome.prefix')
                     ),
                     $value
                 );

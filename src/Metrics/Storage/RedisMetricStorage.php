@@ -45,7 +45,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                     MetricType::Counter => $pipe->incrbyfloat($metricKey, $value->value()),
                     MetricType::Gauge => $pipe->set($metricKey, json_encode([
                         'value' => $value->value(),
-                        'timestamp' => $timestamp
+                        'timestamp' => $timestamp->timestamp
                     ])),
                     MetricType::Histogram,
                     MetricType::Summary,
@@ -53,7 +53,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                     MetricType::Percentage,
                     MetricType::Rate => $pipe->zadd($metricKey, $timestamp->timestamp, json_encode([
                         'value' => $value->value(),
-                        'timestamp' => $timestamp
+                        'timestamp' => $timestamp->timestamp
                     ]))
                 };
 

@@ -26,7 +26,7 @@ final readonly class Dimension implements \JsonSerializable
     public static function from(string|array|Dimension $data): self
     {
         if ($data instanceof self) {
-            return $data;
+            return new self($data->name, $data->value);
         }
 
         if (is_string($data)) {

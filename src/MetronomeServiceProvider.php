@@ -7,6 +7,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Octane\Facades\Octane;
 use Ninja\Metronome\Console\Commands\ProcessMetricsCommand;
 use Ninja\Metronome\Console\Commands\PruneMetricsCommand;
+use Ninja\Metronome\Contracts\ShouldReportMetric;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\MetricAggregator;
 use Ninja\Metronome\MetricManager;
@@ -107,6 +108,7 @@ final class MetronomeServiceProvider extends ServiceProvider
         $this->registerMetricProviders();
         $this->registerMetricCollectors();
         $this->registerMetricProcessor();
+        $this->registerListener();
     }
 
     private function registerCommands(): void
@@ -166,5 +168,16 @@ final class MetronomeServiceProvider extends ServiceProvider
         }
 
         Registry::initialize();
+    }
+
+    private function registerListener(): void
+    {
+        $this->app['events']->listen("*", function (string $eventName, array $payload) {
+            $event = array_pop($payload);
+
+            if ($event instanceof ShouldReportMetric) {
+                collect($event->metric());
+            }
+        });
     }
 }

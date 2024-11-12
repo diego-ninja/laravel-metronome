@@ -60,7 +60,7 @@ final readonly class TimeRange implements JsonSerializable, Stringable
 
     public function duration(): int
     {
-        return $this->to->diffInSeconds($this->from);
+        return abs($this->to->diffInSeconds($this->from));
     }
 
     public function contains(Carbon $timestamp): bool
@@ -70,7 +70,7 @@ final readonly class TimeRange implements JsonSerializable, Stringable
 
     public function overlaps(self $other): bool
     {
-        return $this->from->lte($other->to) && $this->to->gte($other->from);
+        return $this->from->lt($other->to) && $this->to->gt($other->from);
     }
 
     public function equals(self $other): bool
