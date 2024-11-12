@@ -1,0 +1,10 @@
+build
+composer.lock
+vendor
+.idea
+/.phpunit.cache
+/.phpunit.result.cache
+tester.php
+/src/Collectors/DeviceMetricCollector.php
+/src/Collectors/SessionMetricCollector.php
+/src/Metrics/Definition/Device/

@@ -1,0 +1,54 @@
+{
+    "name": "diego-ninja/laravel-metronome",
+    "description": "A metric aggregator and processor for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Ninja\\Metronome\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Diego Rin",
+            "email": "yosoy@diego.ninja"
+        }
+    ],
+    "minimum-stability": "beta",
+    "require": {
+        "php": "^8.2",
+        "ext-json": "*",
+        "ext-pdo": "*",
+        "laravel/framework": "^10 || ^11",
+        "nesbot/carbon": "^2 || ^3"
+    },
+    "require-dev": {
+        "ext-redis": "*",
+        "barryvdh/laravel-ide-helper": "^3.1",
+        "friendsofphp/php-cs-fixer": "^3.21",
+        "larastan/larastan": "^2.0",
+        "mockery/mockery": "^1.4.4",
+        "pestphp/pest": "^2 || ^3",
+        "squizlabs/php_codesniffer": "^3.7",
+        "laravel/octane": "^2.5",
+        "swoole/ide-helper": "~5.0.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ninja\\Metronome\\MetronomeServiceProvider"
+            ]
+        }
+    }
+}
+
