@@ -1,24 +1,14 @@
 includes:
-    - vendor/larastan/larastan/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
 
 parameters:
-    noModelMake: false
-    noUnnecessaryCollectionCall: false
-    checkModelProperties: true
-    checkOctaneCompatibility: true
-    noEnvCallsOutsideOfConfig: true
-    checkModelAppends: true
-
+    level: max
     paths:
-        - src/
+        - src
 
-    # Level 9 is the highest level
-    level: 5
+    checkMissingIterableValueType: true
+    reportUnmatchedIgnoredErrors: true
 
-#    ignoreErrors:
-#        - '#PHPDoc tag @var#'
-#
-#    excludePaths:
-#        - ./*/*/FileToBeExcluded.php
-#
-#    checkMissingIterableValueType: false
+    ignoreErrors:
+        - "#type mixed is not subtype of native#"

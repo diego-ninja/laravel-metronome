@@ -4,47 +4,61 @@ namespace Ninja\Metronome\Metrics\Handlers;
 
 use Ninja\Metronome\Contracts\MetricValue;
 use Ninja\Metronome\Dto\Value\PercentageMetricValue;
+use Ninja\Metronome\Exceptions\InvalidMetricException;
+use Throwable;
 
-final class Percentage extends AbstractMetricHandler
+// En Percentage.php
+class Percentage extends AbstractMetricHandler
 {
     public function compute(array $values): MetricValue
     {
-        $this->validateOrFail($values);
-
         if (empty($values)) {
-            return PercentageMetricValue::empty();
+            return new PercentageMetricValue(0.0, 0.0, 0);
         }
-
-        $partialSum = 0;
-        $totalSum = 0;
 
         foreach ($values as $value) {
-            $partialSum += $value['value'];
-            $totalSum += $value['metadata']['total'] ?? $value['value'];
+            if (!isset($value['metadata']['total'])) {
+                throw new InvalidMetricException('Percentage total must be provided');
+            }
+
+            if ($value['value'] < 0) {
+                throw new InvalidMetricException('Percentage value must be non-negative');
+            }
+
+            if ($value['metadata']['total'] < 0) {
+                throw new InvalidMetricException('Percentage total must be non-negative');
+            }
+
+            if ($value['value'] > $value['metadata']['total']) {
+                throw new InvalidMetricException('Percentage value cannot be greater than total');
+            }
         }
 
-        return new PercentageMetricValue(
-            value: $partialSum,
-            total: $totalSum,
-            count: count($values)
-        );
+        $totalValue = array_sum(array_column($values, 'value'));
+        $totalSum = array_sum(array_column(array_column($values, 'metadata'), 'total'));
+
+        return new PercentageMetricValue($totalValue, $totalSum, count($values));
     }
 
     public function validate(array $values): bool
     {
-        if (!parent::validate($values)) {
-            return false;
-        }
-
         try {
             foreach ($values as $value) {
-                $total = $value['metadata']['total'] ?? $value['value'];
-                if ($total < 0 || $value['value'] > $total) {
+                if (!isset($value['value'], $value['metadata']['total'])) {
+                    return false;
+                }
+                if (!is_numeric($value['value']) || !is_numeric($value['metadata']['total'])) {
+                    return false;
+                }
+                if ($value['value'] < 0 || $value['metadata']['total'] < 0) {
+                    return false;
+                }
+                if ($value['value'] > $value['metadata']['total']) {
                     return false;
                 }
             }
             return true;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }

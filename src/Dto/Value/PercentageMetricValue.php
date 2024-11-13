@@ -20,11 +20,15 @@ final class PercentageMetricValue extends AbstractMetricValue
 
     protected function validate(): void
     {
+        if ($this->value == 0 && $this->metadata['total'] == 0 && $this->metadata['count'] == 0) {
+            return;
+        }
+
         if ($this->value < 0) {
             throw new InvalidArgumentException('Percentage value must be non-negative');
         }
 
-        if (!isset($this->metadata['total']) || $this->metadata['total'] < 0) {
+        if ($this->metadata['total'] < 0) {
             throw new InvalidArgumentException('Percentage total must be non-negative');
         }
 
