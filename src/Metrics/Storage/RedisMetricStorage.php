@@ -47,6 +47,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                     MetricType::Gauge => $pipe->set($metricKey, json_encode([
                         'value' => $value->value(),
                         'timestamp' => $timestamp->timestamp,
+                        'metadata' => $value->metadata(),
                     ])),
                     MetricType::Histogram,
                     MetricType::Summary,
@@ -55,6 +56,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                     MetricType::Rate => $pipe->zadd($metricKey, $timestamp->timestamp, json_encode([
                         'value' => $value->value(),
                         'timestamp' => $timestamp->timestamp,
+                        'metadata' => $value->metadata(),
                     ]))
                 };
 
@@ -142,6 +144,7 @@ final readonly class RedisMetricStorage implements MetricStorage
             $result[] = [
                 'value' => (float) ($decoded['value'] ?? 0),
                 'timestamp' => (int) $score,
+                'metadata' => $decoded['metadata'] ?? [],
             ];
         }
 
@@ -158,6 +161,7 @@ final readonly class RedisMetricStorage implements MetricStorage
             MetricType::Average => AverageMetricValue::empty(),
             MetricType::Rate => RateMetricValue::empty(),
             MetricType::Percentage => PercentageMetricValue::empty(),
+            MetricType::Unknown => throw new \Exception('To be implemented'),
         };
     }
 
@@ -272,36 +276,6 @@ final readonly class RedisMetricStorage implements MetricStorage
                 'last_check' => now()->toDateTimeString(),
             ];
         }
-    }
-
-    private function histogram(string $key): array
-    {
-        $values = $this->redis->zrange($key, 0, -1, ['WITHSCORES' => true]);
-        if (empty($values)) {
-            return [];
-        }
-
-        return array_map(fn ($value, $score) => [
-            'value' => (float) $value,
-            'timestamp' => (int) $score,
-        ], array_keys($values), array_values($values));
-    }
-
-    private function timestamped(string $key): array
-    {
-        $values = $this->redis->zrange($key, 0, -1, ['WITHSCORES' => true]);
-        if (empty($values)) {
-            return [];
-        }
-
-        return array_map(function ($value, $score) {
-            $decoded = json_decode($value, true);
-
-            return [
-                'value' => (float) ($decoded['value'] ?? $value),
-                'timestamp' => (int) $score,
-            ];
-        }, array_keys($values), array_values($values));
     }
 
     private function prefix(string|Key $key): string

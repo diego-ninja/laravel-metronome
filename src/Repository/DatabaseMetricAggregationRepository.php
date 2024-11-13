@@ -24,7 +24,7 @@ use Throwable;
 
 class DatabaseMetricAggregationRepository implements MetricAggregationRepository
 {
-    public const METRIC_AGGREGATION_TABLE = 'metrics';
+    public const METRIC_AGGREGATION_TABLE = 'metronome_metrics';
 
     public function store(Metric $metric): void
     {
@@ -126,6 +126,7 @@ class DatabaseMetricAggregationRepository implements MetricAggregationRepository
                 MetricType::Average => AverageMetricValue::empty(),
                 MetricType::Rate => RateMetricValue::empty(),
                 MetricType::Percentage => PercentageMetricValue::empty(),
+                MetricType::Unknown => throw new \Exception('To be implemented'),
             };
         }
     }

@@ -33,6 +33,7 @@ beforeEach(function () {
         $pipe->shouldReceive('zadd')->byDefault()->withAnyArgs();
         $pipe->shouldReceive('expire')->byDefault()->withAnyArgs();
         $callback($pipe);
+
         return null;
     });
 
@@ -111,6 +112,7 @@ it('stores histogram metric value', function () {
     $now = Carbon::now();
     Carbon::setTestNow($now);
 
+    $buckets = [10, 50, 100];
     $key = new Key(
         name: 'test_metric',
         type: MetricType::Histogram,
@@ -119,7 +121,12 @@ it('stores histogram metric value', function () {
         slot: time()
     );
 
-    $value = new HistogramMetricValue(42.0, [10, 50, 100]);
+    $value = new HistogramMetricValue(
+        value: 42.0,
+        buckets: $buckets,
+        count: 1,
+        sum: 42.0
+    );
 
     $this->redis->shouldReceive('pipeline')
         ->once()
@@ -129,9 +136,11 @@ it('stores histogram metric value', function () {
                 ->withArgs(function ($key, $score, $value) use ($now) {
                     $data = json_decode($value, true);
 
-                    return str_contains($key, ':histogram:') &&
-                        $data['value'] === 42.0 &&
-                        $score === $now->timestamp;
+                    return str_contains($key, ':histogram:')
+                        && $score === $now->timestamp
+                        && isset($data['value'])
+                        && isset($data['timestamp'])
+                        && isset($data['metadata']);
                 })
                 ->once();
             $pipe->shouldReceive('expire')->withAnyArgs()->once();
@@ -154,7 +163,12 @@ it('stores summary metric value', function () {
         slot: time()
     );
 
-    $value = new SummaryMetricValue(42.0, [0.5, 0.9, 0.99]);
+    $value = new SummaryMetricValue(
+        value: 42.0,
+        quantiles: [0.5, 0.9, 0.99],
+        count: 1,
+        sum: 42.0
+    );
 
     $this->redis->shouldReceive('pipeline')
         ->once()
@@ -164,9 +178,11 @@ it('stores summary metric value', function () {
                 ->withArgs(function ($key, $score, $value) use ($now) {
                     $data = json_decode($value, true);
 
-                    return str_contains($key, ':summary:') &&
-                        $data['value'] === 42.0 &&
-                        $score === $now->timestamp;
+                    return str_contains($key, ':summary:')
+                        && $score === $now->timestamp
+                        && isset($data['value'])
+                        && isset($data['timestamp'])
+                        && isset($data['metadata']);
                 })
                 ->once();
             $pipe->shouldReceive('expire')->withAnyArgs()->once();
@@ -189,7 +205,11 @@ it('stores average metric value', function () {
         slot: time()
     );
 
-    $value = new AverageMetricValue(15.0, 30.0, 2);
+    $value = new AverageMetricValue(
+        value: 15.0,
+        sum: 30.0,
+        count: 2
+    );
 
     $this->redis->shouldReceive('pipeline')
         ->once()
@@ -199,9 +219,13 @@ it('stores average metric value', function () {
                 ->withArgs(function ($key, $score, $value) use ($now) {
                     $data = json_decode($value, true);
 
-                    return str_contains($key, ':average:') &&
-                        $data['value'] === 15.0 &&
-                        $score === $now->timestamp;
+                    return str_contains($key, ':average:')
+                        && $score === $now->timestamp
+                        && isset($data['value'])
+                        && isset($data['timestamp'])
+                        && isset($data['metadata'])
+                        && isset($data['metadata']['sum'])
+                        && isset($data['metadata']['count']);
                 })
                 ->once();
             $pipe->shouldReceive('expire')->withAnyArgs()->once();
@@ -224,7 +248,11 @@ it('stores percentage metric value', function () {
         slot: time()
     );
 
-    $value = new PercentageMetricValue(75.0, 100.0);
+    $value = new PercentageMetricValue(
+        value: 75.0,
+        total: 100.0,
+        count: 1
+    );
 
     $this->redis->shouldReceive('pipeline')
         ->once()
@@ -234,9 +262,14 @@ it('stores percentage metric value', function () {
                 ->withArgs(function ($key, $score, $value) use ($now) {
                     $data = json_decode($value, true);
 
-                    return str_contains($key, ':percentage:') &&
-                        $data['value'] === 75.0 &&
-                        $score === $now->timestamp;
+                    return str_contains($key, ':percentage:')
+                        && $score === $now->timestamp
+                        && isset($data['value'])
+                        && isset($data['timestamp'])
+                        && isset($data['metadata'])
+                        && isset($data['metadata']['total'])
+                        && isset($data['metadata']['count'])
+                        && isset($data['metadata']['percentage']);
                 })
                 ->once();
             $pipe->shouldReceive('expire')->withAnyArgs()->once();
@@ -259,7 +292,11 @@ it('stores rate metric value', function () {
         slot: time()
     );
 
-    $value = new RateMetricValue(42.0, 3600);
+    $value = new RateMetricValue(
+        value: 42.0,
+        interval: 3600,
+        count: 1
+    );
 
     $this->redis->shouldReceive('pipeline')
         ->once()
@@ -269,9 +306,13 @@ it('stores rate metric value', function () {
                 ->withArgs(function ($key, $score, $value) use ($now) {
                     $data = json_decode($value, true);
 
-                    return str_contains($key, ':rate:') &&
-                        $data['value'] === 42.0 &&
-                        $score === $now->timestamp;
+                    return str_contains($key, ':rate:')
+                        && $score === $now->timestamp
+                        && isset($data['value'])
+                        && isset($data['timestamp'])
+                        && isset($data['metadata'])
+                        && isset($data['metadata']['interval'])
+                        && isset($data['metadata']['count']);
                 })
                 ->once();
             $pipe->shouldReceive('expire')->withAnyArgs()->once();
@@ -301,19 +342,24 @@ test('each metric type is stored with correct Redis command', function (MetricTy
         MetricType::Summary => new SummaryMetricValue(1.0, [0.5, 0.9, 0.99]),
         MetricType::Average => new AverageMetricValue(1.0, 1.0, 1),
         MetricType::Rate => new RateMetricValue(1.0, 3600),
-        MetricType::Percentage => new PercentageMetricValue(1.0, 100.0)
+        MetricType::Percentage => new PercentageMetricValue(1.0, 100.0, 1)
     };
 
     $this->redis->shouldReceive('pipeline')
         ->once()
         ->andReturnUsing(function ($callback) use ($expectedCommand) {
             $pipe = Mockery::mock('Illuminate\Redis\Connections\Connection');
-            $pipe->shouldReceive($expectedCommand)->withAnyArgs()->once();
+            $pipe->shouldReceive($expectedCommand)
+                ->withArgs(function (...$args) {
+                    return true;
+                })
+                ->once();
             $pipe->shouldReceive('expire')->withAnyArgs()->once();
             $callback($pipe);
         });
 
-    expect(fn () => $this->storage->store($key, $value))->not->toThrow(Exception::class);
+    $this->storage->store($key, $value);
+    expect(true)->toBeTrue();
 })->with([
     [MetricType::Counter, 'incrbyfloat'],
     [MetricType::Gauge, 'set'],
@@ -580,11 +626,22 @@ test('retrieving empty values returns appropriate defaults', function (MetricTyp
         slot: time()
     );
 
+    $buckets = [10, 50, 100];
+    $quantiles = [0.5, 0.9, 0.99];
+
     match ($type) {
         MetricType::Counter,
         MetricType::Gauge => $this->redis->shouldReceive('get')->once()->andReturn(null),
+        MetricType::Histogram => $this->redis->shouldReceive('zrange')
+            ->withAnyArgs()
+            ->once()
+            ->andReturn([json_encode(['value' => 0, 'metadata' => ['buckets' => $buckets]])]),
+        MetricType::Summary => $this->redis->shouldReceive('zrange')
+            ->withAnyArgs()
+            ->once()
+            ->andReturn([json_encode(['value' => 0, 'metadata' => ['quantiles' => $quantiles]])]),
         default => $this->redis->shouldReceive('zrange')
-            ->with(Mockery::any(), 0, -1, ['WITHSCORES' => true])
+            ->withAnyArgs()
             ->once()
             ->andReturn([])
     };

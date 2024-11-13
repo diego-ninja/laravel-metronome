@@ -21,7 +21,6 @@ final readonly class MetricProcessor implements Processor
     ) {}
 
     /**
-     * @throws MetricHandlerNotFoundException
      * @throws Throwable
      */
     public function process(Processable $item): void
@@ -30,16 +29,10 @@ final readonly class MetricProcessor implements Processor
             throw new InvalidArgumentException('Invalid processable type');
         }
 
-        $value = $this->storage->value($item->key());
-
-        if (empty($value)) {
-            return;
-        }
-
         $metric = new MetricDto(
             name: $item->key()->name,
             type: $item->key()->type,
-            value: HandlerFactory::compute($item->key()->type, $value),
+            value: $this->storage->value($item->key()),
             timestamp: $item->window()->from,
             dimensions: $item->key()->dimensions,
             aggregation: $item->window()->aggregation

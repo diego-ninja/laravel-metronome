@@ -51,7 +51,7 @@ final readonly class TypeProcessor implements Processor
     {
         return sprintf(
             '%s:*:%s:%s:%d:*',
-            config('devices.observability.prefix'),
+            config('metronome.prefix'),
             $item->type()->value,
             $item->window()->aggregation->value,
             $item->window()->slot
