@@ -3,8 +3,6 @@
 namespace Ninja\Metronome\Processors;
 
 use InvalidArgumentException;
-use Ninja\Metronome\Exceptions\MetricHandlerNotFoundException;
-use Ninja\Metronome\Metrics\Handlers\HandlerFactory;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
 use Ninja\Metronome\Processors\Contracts\Processable;
 use Ninja\Metronome\Processors\Contracts\Processor;
