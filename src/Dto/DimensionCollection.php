@@ -45,7 +45,7 @@ final class DimensionCollection extends Collection implements \JsonSerializable,
             return [];
         }
 
-        return array_diff($this->names(), $allowedDimensions);
+        return array_values(array_diff($this->names(), $allowedDimensions));
     }
 
     private function missingDimensions(array $requiredDimensions): array

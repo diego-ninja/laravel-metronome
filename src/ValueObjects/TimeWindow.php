@@ -74,7 +74,7 @@ final readonly class TimeWindow implements JsonSerializable, Stringable
 
     public function overlaps(self $other): bool
     {
-        return $this->from->lte($other->to) && $this->to->gte($other->from);
+        return $this->from->lt($other->to) && $this->to->gt($other->from);
     }
 
     public function asTimeRange(): TimeRange

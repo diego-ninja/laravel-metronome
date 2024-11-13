@@ -11,6 +11,7 @@ enum MetricType: string
     case Average = 'average';
     case Rate = 'rate';
     case Percentage = 'percentage';
+    case Unknown = 'unknown';
 
     public static function values(): array
     {

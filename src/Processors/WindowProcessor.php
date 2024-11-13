@@ -3,6 +3,7 @@
 namespace Ninja\Metronome\Processors;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Ninja\Metronome\Dto\Key;
 use Ninja\Metronome\Enums\Aggregation;
@@ -72,7 +73,13 @@ final class WindowProcessor implements Processor
     {
         return collect($this->storage->keys($windowType->pattern()))
             ->map(function ($key) {
-                return Key::decode($key)->asTimeWindow();
+                try {
+                    return Key::decode($key)->asTimeWindow();
+                } catch (Throwable $e) {
+                    Log::warning('Invalid metric key found', ['key' => $key, 'error' => $e->getMessage()]);
+
+                    return null;
+                }
             })
             ->filter(function (TimeWindow $window) use ($windowType) {
                 return

@@ -1,7 +1,8 @@
 <?php
 
-namespace Ninja\Metronome\Contracts;
+namespace Ninja\Metronome\Metrics\Handlers\Contracts;
 
+use Ninja\Metronome\Contracts\MetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 
 interface MetricHandler

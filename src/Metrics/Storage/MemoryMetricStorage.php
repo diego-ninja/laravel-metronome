@@ -39,9 +39,9 @@ final readonly class MemoryMetricStorage implements MetricStorage
         $this->storage->create();
 
         $this->index = new Table($max);
-        $this->storage->column('keys', Table::TYPE_STRING, 4096);
-        $this->storage->column('expire_at', Table::TYPE_INT);
-        $this->storage->create();
+        $this->index->column('keys', Table::TYPE_STRING, 4096);
+        $this->index->column('expire_at', Table::TYPE_INT);
+        $this->index->create();
     }
 
     public function store(Key $key, MetricValue $value): void
@@ -58,7 +58,6 @@ final readonly class MemoryMetricStorage implements MetricStorage
             };
 
             $this->updateIndex($indexKey, $storageKey, $expireAt);
-
         } catch (Throwable $e) {
             Log::error('Failed to store metric in memory', [
                 'key' => (string)$key,

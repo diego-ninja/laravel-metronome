@@ -1,6 +1,22 @@
 <?php
 
 use Ninja\Metronome\MetricAggregator;
+use Ninja\Metronome\Repository\Dto\Metric;
+
+if (! function_exists('metronome')) {
+    function metronome(): MetricAggregator
+    {
+        return app(MetricAggregator::class);
+    }
+}
+
+if (! function_exists('metric')) {
+    function metric(Metric $metric): void
+    {
+        $aggregator = app(MetricAggregator::class);
+        $aggregator->collect($metric);
+    }
+}
 
 if (! function_exists('counter')) {
     function counter(string $name, float $value = 1, ?array $dimensions = null): void

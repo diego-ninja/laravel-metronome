@@ -3,8 +3,8 @@
 namespace Ninja\Metronome\Metrics\Handlers;
 
 use Illuminate\Support\Collection;
-use Ninja\Metronome\Contracts\MetricHandler;
 use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Metrics\Handlers\Contracts\MetricHandler;
 
 final readonly class HandlerCollection
 {

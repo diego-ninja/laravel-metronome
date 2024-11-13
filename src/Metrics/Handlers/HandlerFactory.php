@@ -2,8 +2,12 @@
 
 namespace Ninja\Metronome\Metrics\Handlers;
 
+use Exception;
 use Ninja\Metronome\Contracts\MetricValue;
+use Ninja\Metronome\Enums\Bucket;
 use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Enums\Quantile;
+use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Exceptions\MetricHandlerNotFoundException;
 
 final class HandlerFactory
@@ -16,6 +20,7 @@ final class HandlerFactory
 
     /**
      * @throws MetricHandlerNotFoundException
+     * @throws InvalidMetricException
      */
     public static function compute(MetricType $type, array $rawValue): MetricValue
     {
@@ -27,18 +32,13 @@ final class HandlerFactory
         return $handler->compute($rawValue);
     }
 
-    /**
-     * @throws MetricHandlerNotFoundException
-     */
-    public static function validate(MetricType $type, MetricValue $value): bool
+    public static function handlers(): HandlerCollection
     {
-        $handler = self::handlers()->get($type);
-
-        if (!$handler) {
-            throw MetricHandlerNotFoundException::forType($type);
+        if (self::$handlers === null) {
+            self::initialize();
         }
 
-        return $handler->validate($value);
+        return self::$handlers;
     }
 
     private static function initialize(): void
@@ -57,9 +57,7 @@ final class HandlerFactory
 
         self::$handlers->add(
             MetricType::Histogram,
-            new Histogram(
-                config('devices.observability.buckets', [])
-            )
+            new Histogram()
         );
 
         self::$handlers->add(
@@ -69,25 +67,44 @@ final class HandlerFactory
 
         self::$handlers->add(
             MetricType::Rate,
-            new Rate(
-                config('devices.observability.rate_interval', 3600)
-            )
+            new Rate()
         );
 
         self::$handlers->add(
             MetricType::Summary,
-            new Summary(
-                config('devices.observability.quantiles', [0.5, 0.9, 0.95, 0.99])
-            )
+            new Summary()
+        );
+
+        self::$handlers->add(
+            MetricType::Percentage,
+            new Percentage()
         );
     }
 
-    public static function handlers(): HandlerCollection
+    /**
+     * This method should only be used in testing.
+     * @internal
+     */
+    public static function reset(): void
     {
-        if (self::$handlers === null) {
-            self::initialize();
-        }
+        self::$handlers = null;
+    }
 
-        return self::$handlers;
+    /**
+     * Prevent cloning of the instance
+     * @internal
+     */
+    private function __clone()
+    {
+    }
+
+    /**
+     * Prevent unserializing of the instance
+     * @internal
+     * @throws Exception
+     */
+    public function __wakeup()
+    {
+        throw new Exception("Cannot unserialize singleton");
     }
 }

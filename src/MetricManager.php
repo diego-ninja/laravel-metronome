@@ -38,7 +38,9 @@ final readonly class MetricManager
 
             $this->windowProcessor->process($processable);
 
-            $this->cleanup($this->windowProcessor->keys());
+            if ($this->windowProcessor->state()->errors($window) === 0) {
+                $this->cleanup($this->windowProcessor->keys());
+            }
 
             Log::info('Successfully processed metrics window', [
                 'window' => $window->value,
