@@ -12,13 +12,17 @@ use Throwable;
 final class MemoryStateStorage implements StateStorage
 {
     private readonly Table $storage;
+
     private readonly Table $hashStorage;
+
     private readonly Table $counterStorage;
+
     private readonly string $prefix;
 
     private array $operations = [];
 
     private array $errors = [];
+
     private bool $pipelinig = false;
 
     public function __construct(?string $prefix = null)
@@ -44,6 +48,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['get', [$key]];
+
             return null;
         }
 
@@ -53,7 +58,7 @@ final class MemoryStateStorage implements StateStorage
     private function _get(string $key): ?string
     {
         $data = $this->storage->get($this->prefix($key));
-        if (!$data || ($data['expire_at'] > 0 && $data['expire_at'] < time())) {
+        if (! $data || ($data['expire_at'] > 0 && $data['expire_at'] < time())) {
             return null;
         }
 
@@ -64,6 +69,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['set', [$key, $value, $ttl]];
+
             return;
         }
 
@@ -76,7 +82,7 @@ final class MemoryStateStorage implements StateStorage
 
         $this->storage->set($this->prefix($key), [
             'value' => $value,
-            'expire_at' => $expireAt
+            'expire_at' => $expireAt,
         ]);
     }
 
@@ -84,6 +90,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['increment', [$key]];
+
             return 0;
         }
 
@@ -106,6 +113,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['delete', [$key]];
+
             return;
         }
 
@@ -131,6 +139,7 @@ final class MemoryStateStorage implements StateStorage
 
         try {
             $callback($this);
+
             return $this->execute();
         } finally {
             $this->finish();
@@ -151,6 +160,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['hSet', [$key, $field, $value]];
+
             return;
         }
 
@@ -162,20 +172,21 @@ final class MemoryStateStorage implements StateStorage
         $hashKey = $this->prefix(sprintf('%s:%s', $key, $field));
         $this->hashStorage->set($hashKey, [
             'value' => $value,
-            'timestamp' => time()
+            'timestamp' => time(),
         ]);
     }
-
 
     public function hGet(string $key, string $field): ?string
     {
         if ($this->pipelinig) {
             $this->operations[] = ['hGet', [$key, $field]];
+
             return null;
         }
 
         return $this->_hGet($key, $field);
     }
+
     private function _hGet(string $key, string $field): ?string
     {
         $hashKey = $this->prefix(sprintf('%s:%s', $key, $field));
@@ -188,6 +199,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['hExists', [$key, $field]];
+
             return false;
         }
 
@@ -197,6 +209,7 @@ final class MemoryStateStorage implements StateStorage
     private function _hExists(string $key, string $field): bool
     {
         $hashKey = $this->prefix(sprintf('%s:%s', $key, $field));
+
         return $this->hashStorage->exist($hashKey);
     }
 
@@ -204,6 +217,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['hGetAll', [$key]];
+
             return [];
         }
 
@@ -213,7 +227,7 @@ final class MemoryStateStorage implements StateStorage
     private function _hGetAll(string $key): array
     {
         $result = [];
-        $prefix = $key . ':';
+        $prefix = $key.':';
         $prefixLength = strlen($prefix);
 
         foreach ($this->hashStorage as $hashKey => $data) {
@@ -230,6 +244,7 @@ final class MemoryStateStorage implements StateStorage
     {
         if ($this->pipelinig) {
             $this->operations[] = ['hDel', [$key, $field]];
+
             return;
         }
 
@@ -278,9 +293,9 @@ final class MemoryStateStorage implements StateStorage
             'metrics_count' => iterator_count($this->storage),
             'memory' => [
                 'size' => $this->storage->getSize(),
-                'memory_size' => $this->storage->getMemorySize()
+                'memory_size' => $this->storage->getMemorySize(),
             ],
-            'last_cleanup' => now()->toDateTimeString()
+            'last_cleanup' => now()->toDateTimeString(),
         ];
     }
 
@@ -305,21 +320,21 @@ final class MemoryStateStorage implements StateStorage
             $errors[] = [
                 'index' => $index,
                 'operation' => $operation,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ];
 
-            if (!config('devices.observability.storage.continue_on_error', true)) {
+            if (! config('devices.observability.storage.continue_on_error', true)) {
                 throw $e;
             }
         } finally {
             $this->operations = [];
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $this->errors = array_merge($this->errors, $errors);
             Log::warning('Some pipeline operations failed', [
                 'errors' => $errors,
-                'total_operations' => count($this->errors)
+                'total_operations' => count($this->errors),
             ]);
         }
 
@@ -364,7 +379,7 @@ final class MemoryStateStorage implements StateStorage
 
     private function prefix(string $key): string
     {
-        if (str_starts_with($key, $this->prefix . ':')) {
+        if (str_starts_with($key, $this->prefix.':')) {
             return $key;
         }
 

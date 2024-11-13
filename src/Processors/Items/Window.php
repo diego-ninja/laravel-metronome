@@ -10,8 +10,8 @@ final readonly class Window implements Processable
 {
     public function __construct(
         private TimeWindow $window
-    ) {
-    }
+    ) {}
+
     public function identifier(): string
     {
         return sprintf(
@@ -24,7 +24,7 @@ final readonly class Window implements Processable
     public function metadata(): Metadata
     {
         return new Metadata([
-            'window' => $this->window->array()
+            'window' => $this->window->array(),
         ]);
     }
 

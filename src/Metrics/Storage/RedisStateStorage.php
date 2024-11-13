@@ -21,6 +21,7 @@ final readonly class RedisStateStorage implements StateStorage
         $this->prefix = $prefix ?: config('devices.observability.prefix');
         $this->redis = Redis::connection($connection);
     }
+
     public function get(string $key): ?string
     {
         return $this->redis->get($this->prefix($key));
@@ -71,6 +72,7 @@ final readonly class RedisStateStorage implements StateStorage
     {
         $this->redis->hdel($this->prefix($key), $field);
     }
+
     public function clean(): int
     {
         return 0;
@@ -85,7 +87,7 @@ final readonly class RedisStateStorage implements StateStorage
 
         foreach ($keys as $key => $data) {
             $$key = $this->strip($key);
-            $windowKey = str_replace(sprintf("window:%s:", $window->value), '', $key);
+            $windowKey = str_replace(sprintf('window:%s:', $window->value), '', $key);
             $state[$windowKey] = $this->redis->get($key);
         }
 
@@ -115,6 +117,7 @@ final readonly class RedisStateStorage implements StateStorage
     public function lock(string $key, int $timeout = 10): bool
     {
         $lockKey = $this->prefix(sprintf('lock:%s', $key));
+
         return (bool) $this->redis->set($lockKey, '1', 'NX', 'EX', $timeout);
     }
 
@@ -130,7 +133,7 @@ final readonly class RedisStateStorage implements StateStorage
     public function withLock(string $key, callable $callback, int $timeout = 10): mixed
     {
         try {
-            if (!$this->lock($key, $timeout)) {
+            if (! $this->lock($key, $timeout)) {
                 throw new RuntimeException(sprintf('Failed to acquire lock for key: %s', $key));
             }
 
@@ -148,7 +151,7 @@ final readonly class RedisStateStorage implements StateStorage
         do {
             [$cursor, $keys] = $this->redis->scan($cursor, [
                 'match' => $normalizedPattern,
-                'count' => $count
+                'count' => $count,
             ]);
 
             foreach ($keys as $key) {
@@ -177,20 +180,20 @@ final readonly class RedisStateStorage implements StateStorage
                 'evicted_keys' => $info['evicted_keys'],
                 'keyspace_hits' => $info['keyspace_hits'],
                 'keyspace_misses' => $info['keyspace_misses'],
-                'memory_fragmentation_ratio' => $info['mem_fragmentation_ratio']
+                'memory_fragmentation_ratio' => $info['mem_fragmentation_ratio'],
             ];
         } catch (Throwable $e) {
             return [
                 'status' => 'error',
                 'error' => $e->getMessage(),
-                'timestamp' => now()
+                'timestamp' => now(),
             ];
         }
     }
 
     private function prefix(string $key): string
     {
-        if (str_contains($key, sprintf("%s:", $this->prefix))) {
+        if (str_contains($key, sprintf('%s:', $this->prefix))) {
             return $key;
         }
 
@@ -199,7 +202,7 @@ final readonly class RedisStateStorage implements StateStorage
 
     private function strip(string $key): string
     {
-        if (str_starts_with($key, $this->prefix . '%s:state')) {
+        if (str_starts_with($key, $this->prefix.'%s:state')) {
             return substr($key, strlen($this->prefix) + 1);
         }
 

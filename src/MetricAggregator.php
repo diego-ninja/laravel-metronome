@@ -28,9 +28,9 @@ final readonly class MetricAggregator
 
     public function __construct(private MetricStorage $storage)
     {
-        $this->windows = collect(config("metronome.aggregation.windows", [
+        $this->windows = collect(config('metronome.aggregation.windows', [
             Aggregation::Realtime,
-            Aggregation::Hourly
+            Aggregation::Hourly,
         ]));
     }
 
@@ -53,7 +53,7 @@ final readonly class MetricAggregator
     public function counter(string $name, float $value = 1, ?array $dimensions = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -71,7 +71,7 @@ final readonly class MetricAggregator
     public function gauge(string $name, float $value, ?array $dimensions = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -89,7 +89,7 @@ final readonly class MetricAggregator
     public function percentage(string $name, float $value, float $total, ?array $dimensions = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -107,7 +107,7 @@ final readonly class MetricAggregator
     public function histogram(string $name, float $value, ?array $dimensions = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -128,7 +128,7 @@ final readonly class MetricAggregator
     public function summary(string $name, float $value, ?array $dimensions = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -143,14 +143,13 @@ final readonly class MetricAggregator
         );
     }
 
-
     /**
      * @throws InvalidMetricException
      */
     public function average(string $name, float $value, ?array $dimensions = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -168,7 +167,7 @@ final readonly class MetricAggregator
     public function rate(string $name, float $value, array $dimensions = [], ?int $interval = null): void
     {
         $definition = Registry::get($name);
-        if (!$definition) {
+        if (! $definition) {
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
@@ -210,7 +209,7 @@ final readonly class MetricAggregator
                     'name' => $name,
                     'type' => $type->value,
                     'window' => $window->value,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }

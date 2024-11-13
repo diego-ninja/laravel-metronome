@@ -39,7 +39,7 @@ it('converts to array', function () {
 
     expect($dimension->array())->toEqual([
         'name' => 'host',
-        'value' => 'localhost'
+        'value' => 'localhost',
     ]);
 });
 

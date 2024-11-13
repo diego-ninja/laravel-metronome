@@ -21,22 +21,22 @@ it('creates empty percentage metric value', function () {
 });
 
 it('throws exception for negative values', function () {
-    expect(fn() => new PercentageMetricValue(-1, 100))
+    expect(fn () => new PercentageMetricValue(-1, 100))
         ->toThrow(InvalidArgumentException::class, 'Percentage value must be non-negative');
 });
 
 it('throws exception for negative total', function () {
-    expect(fn() => new PercentageMetricValue(50, -100))
+    expect(fn () => new PercentageMetricValue(50, -100))
         ->toThrow(InvalidArgumentException::class, 'Percentage total must be non-negative');
 });
 
 it('throws exception when value greater than total', function () {
-    expect(fn() => new PercentageMetricValue(150, 100))
+    expect(fn () => new PercentageMetricValue(150, 100))
         ->toThrow(InvalidArgumentException::class, 'Percentage value cannot be greater than total');
 });
 
 it('throws exception for non-positive count', function () {
-    expect(fn() => new PercentageMetricValue(50, 100, 0))
+    expect(fn () => new PercentageMetricValue(50, 100, 0))
         ->toThrow(InvalidArgumentException::class, 'Percentage count must be positive');
 });
 
@@ -59,8 +59,8 @@ it('serializes to json', function () {
         'metadata' => [
             'total' => 100.0,
             'count' => 10,
-            'percentage' => 75.0
-        ]
+            'percentage' => 75.0,
+        ],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -69,10 +69,10 @@ it('serializes to json', function () {
 
 test('percentage validation scenarios', function (float $value, float $total, int $count, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new PercentageMetricValue($value, $total, $count))
+        expect(fn () => new PercentageMetricValue($value, $total, $count))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new PercentageMetricValue($value, $total, $count))
+        expect(fn () => new PercentageMetricValue($value, $total, $count))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([

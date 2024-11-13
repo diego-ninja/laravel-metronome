@@ -10,6 +10,7 @@ uses()->group('integration')->in('Integration');
 
 expect()->extend('toBeCloseTo', function (float $expected, int $precision = 0) {
     $delta = 1 / (10 ** $precision);
+
     return abs($this->value - $expected) < $delta;
 });
 function defineEnvironment($app): void

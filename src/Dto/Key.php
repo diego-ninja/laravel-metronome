@@ -24,7 +24,7 @@ final class Key implements JsonSerializable, Stringable
 
     public static function decode(string $key): self
     {
-        $parts = explode(":", $key);
+        $parts = explode(':', $key);
         if (self::prefixed($parts)) {
             return new self(
                 name: $parts[1],
@@ -51,7 +51,7 @@ final class Key implements JsonSerializable, Stringable
             'type' => $this->type->value,
             'window' => $this->window->value,
             'dimensions' => $this->dimensions->array(),
-            'slot' => $this->slot
+            'slot' => $this->slot,
         ];
     }
 
@@ -60,6 +60,7 @@ final class Key implements JsonSerializable, Stringable
         if (is_string($data)) {
             $data = json_decode($data, true);
         }
+
         return new self(
             name: $data['name'],
             type: MetricType::from($data['type']),
@@ -91,7 +92,7 @@ final class Key implements JsonSerializable, Stringable
     {
         if ($this->prefix) {
             return sprintf(
-                "%s:%s:%s:%s:%d:%s",
+                '%s:%s:%s:%s:%d:%s',
                 $this->prefix,
                 $this->name,
                 $this->type->value,
@@ -102,7 +103,7 @@ final class Key implements JsonSerializable, Stringable
         }
 
         return sprintf(
-            "%s:%s:%s:%d:%s",
+            '%s:%s:%s:%d:%s',
             $this->name,
             $this->type->value,
             $this->window->value,

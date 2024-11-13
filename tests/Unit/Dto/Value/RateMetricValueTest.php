@@ -8,7 +8,7 @@ it('creates rate metric value', function () {
     expect($value->value())->toEqual(10.5)
         ->and($value->metadata())->toEqual([
             'interval' => 3600,
-            'count' => 5
+            'count' => 5,
         ]);
 });
 
@@ -21,12 +21,12 @@ it('creates empty rate metric value', function () {
 });
 
 it('throws exception for negative values', function () {
-    expect(fn() => new RateMetricValue(-1, 3600))
+    expect(fn () => new RateMetricValue(-1, 3600))
         ->toThrow(InvalidArgumentException::class, 'Rate value must be non-negative');
 });
 
 it('throws exception for non-positive interval', function () {
-    expect(fn() => new RateMetricValue(10, 0))
+    expect(fn () => new RateMetricValue(10, 0))
         ->toThrow(InvalidArgumentException::class, 'Rate interval must be positive');
 });
 
@@ -37,8 +37,8 @@ it('serializes to json', function () {
         'value' => 10.5,
         'metadata' => [
             'interval' => 3600,
-            'count' => 5
-        ]
+            'count' => 5,
+        ],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -47,10 +47,10 @@ it('serializes to json', function () {
 
 test('rate validation scenarios', function (float $value, int $interval, int $count, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new RateMetricValue($value, $interval, $count))
+        expect(fn () => new RateMetricValue($value, $interval, $count))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new RateMetricValue($value, $interval, $count))
+        expect(fn () => new RateMetricValue($value, $interval, $count))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([

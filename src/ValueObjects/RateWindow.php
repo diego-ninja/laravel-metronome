@@ -29,6 +29,7 @@ final readonly class RateWindow implements JsonSerializable, Stringable
     {
         if (empty($values)) {
             $now = time();
+
             return new self(
                 start: $now,
                 end: $now,
@@ -38,7 +39,7 @@ final readonly class RateWindow implements JsonSerializable, Stringable
         }
 
         $timestamps = array_map(
-            fn($v) => $v['timestamp'] ?? time(),
+            fn ($v) => $v['timestamp'] ?? time(),
             $values
         );
 
@@ -80,7 +81,7 @@ final readonly class RateWindow implements JsonSerializable, Stringable
                 'interval' => $this->interval,
                 'window_start' => $this->start,
                 'window_end' => $this->end,
-                'metadata' => $this->metadata
+                'metadata' => $this->metadata,
             ];
         }
 
@@ -90,7 +91,7 @@ final readonly class RateWindow implements JsonSerializable, Stringable
             'interval' => $this->interval,
             'window_start' => $this->start,
             'window_end' => $this->end,
-            'metadata' => $this->metadata
+            'metadata' => $this->metadata,
         ];
     }
 
@@ -123,7 +124,7 @@ final readonly class RateWindow implements JsonSerializable, Stringable
             'duration' => $this->duration(),
             'interval' => $this->interval,
             'value_count' => count($this->values),
-            'metadata' => $this->metadata
+            'metadata' => $this->metadata,
         ];
     }
 

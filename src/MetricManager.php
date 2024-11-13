@@ -20,15 +20,15 @@ final readonly class MetricManager
         private WindowProcessor $windowProcessor,
         private MetricStorage $storage,
         private StateManager $stateManager
-    ) {
-    }
+    ) {}
 
     public function process(Aggregation $window): void
     {
-        if (!$this->enabled($window)) {
+        if (! $this->enabled($window)) {
             Log::warning('Attempted to process disabled window', [
-                'window' => $window->value
+                'window' => $window->value,
             ]);
+
             return;
         }
 
@@ -45,7 +45,7 @@ final readonly class MetricManager
             Log::info('Successfully processed metrics window', [
                 'window' => $window->value,
                 'timeWindow' => $timeWindow->array(),
-                'processed_keys' => $this->windowProcessor->keys()->count()
+                'processed_keys' => $this->windowProcessor->keys()->count(),
             ]);
         } catch (Throwable $e) {
             $this->handleError($e, $window);
@@ -55,7 +55,7 @@ final readonly class MetricManager
 
     public function prune(Aggregation $window): int
     {
-        if (!$this->enabled($window)) {
+        if (! $this->enabled($window)) {
             return 0;
         }
 
@@ -67,14 +67,14 @@ final readonly class MetricManager
             Log::info('Pruned old metrics', [
                 'window' => $window->value,
                 'before' => $before->toDateTimeString(),
-                'count' => $prunedCount
+                'count' => $prunedCount,
             ]);
 
             return $prunedCount;
         } catch (Throwable $e) {
             Log::error('Failed to prune metrics', [
                 'window' => $window->value,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -84,19 +84,19 @@ final readonly class MetricManager
     {
         return [
             'enabled_types' => $this->types()
-                ->map(fn(MetricType $type) => $type->value)
+                ->map(fn (MetricType $type) => $type->value)
                 ->all(),
             'windows' => $this->windows()
-                ->mapWithKeys(fn(Aggregation $window) => [
+                ->mapWithKeys(fn (Aggregation $window) => [
                     $window->value => [
                         'last_processing' => $this->last($window)?->toDateTimeString(),
                         'error_count' => $this->errors($window),
                         'interval_seconds' => $window->seconds(),
-                        'retention_period' => $window->retention()->days
-                    ]
+                        'retention_period' => $window->retention()->days,
+                    ],
                 ])->all(),
             'metrics_count' => $this->count(),
-            'system_health' => $this->health()
+            'system_health' => $this->health(),
         ];
     }
 
@@ -125,15 +125,14 @@ final readonly class MetricManager
     private function types(): Collection
     {
         return collect(MetricType::cases())
-            ->filter(fn(MetricType $type) => HandlerFactory::handlers()->has($type));
+            ->filter(fn (MetricType $type) => HandlerFactory::handlers()->has($type));
     }
-
 
     private function windows(): Collection
     {
         return collect(config('devices.observability.aggregation.windows', [
             Aggregation::Realtime,
-            Aggregation::Hourly
+            Aggregation::Hourly,
         ]));
     }
 
@@ -148,6 +147,7 @@ final readonly class MetricManager
         foreach ($this->windows() as $window) {
             $counts[$window->value] = $this->storage->count($window);
         }
+
         return $counts;
     }
 
@@ -158,16 +158,16 @@ final readonly class MetricManager
             'processing' => [
                 'active_windows' => $this->windows()->count(),
                 'errors_last_hour' => $this->windows()
-                    ->sum(fn($window) => $this->errors($window)),
-                'processing_status' => $this->determineProcessingStatus()
-            ]
+                    ->sum(fn ($window) => $this->errors($window)),
+                'processing_status' => $this->determineProcessingStatus(),
+            ],
         ];
     }
 
     private function determineProcessingStatus(): string
     {
         $totalErrors = $this->windows()
-            ->sum(fn($window) => $this->errors($window));
+            ->sum(fn ($window) => $this->errors($window));
 
         if ($totalErrors === 0) {
             return 'healthy';
@@ -181,7 +181,7 @@ final readonly class MetricManager
         Log::error('Failed to process metrics', [
             'window' => $window->value,
             'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+            'trace' => $e->getTraceAsString(),
         ]);
     }
 }

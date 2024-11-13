@@ -12,8 +12,8 @@ final readonly class Type implements Processable
     public function __construct(
         private MetricType $type,
         private TimeWindow $window
-    ) {
-    }
+    ) {}
+
     public function identifier(): string
     {
         return sprintf(
@@ -28,7 +28,7 @@ final readonly class Type implements Processable
     {
         return new Metadata([
             'type' => $this->type->value,
-            'window' => $this->window->array()
+            'window' => $this->window->array(),
         ]);
     }
 

@@ -29,12 +29,11 @@ final class MetronomeServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $config = __DIR__ . '/../config/metronome.php';
+        $config = __DIR__.'/../config/metronome.php';
         $this->mergeConfigFrom(
             path: $config,
             key: 'metronome'
         );
-
 
         $this->app->singleton(MetricStorage::class, function () {
             return new RedisMetricStorage(
@@ -57,7 +56,7 @@ final class MetronomeServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(MetricAggregationRepository::class, function () {
-            return new DatabaseMetricAggregationRepository();
+            return new DatabaseMetricAggregationRepository;
         });
 
         $this->app->singleton(MetricProcessor::class, function () {
@@ -97,7 +96,7 @@ final class MetronomeServiceProvider extends ServiceProvider
         });
 
         if (config('metronome.enabled')) {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/metronome.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/metronome.php');
         }
     }
 
@@ -116,7 +115,7 @@ final class MetronomeServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ProcessMetricsCommand::class,
-                PruneMetricsCommand::class
+                PruneMetricsCommand::class,
             ]);
         }
     }
@@ -125,10 +124,10 @@ final class MetronomeServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/metronome.php' => config_path('metronome.php')], 'config');
+                __DIR__.'/../config/metronome.php' => config_path('metronome.php')], 'config');
 
             $this->publishesMigrations([
-                __DIR__ . '/../database/migrations' => database_path('migrations')
+                __DIR__.'/../database/migrations' => database_path('migrations'),
             ], 'metronome-migrations');
         }
     }
@@ -149,7 +148,6 @@ final class MetronomeServiceProvider extends ServiceProvider
             })->seconds(Aggregation::Realtime->seconds());
         }
     }
-
 
     private function registerMetricCollectors(): void
     {
@@ -172,7 +170,7 @@ final class MetronomeServiceProvider extends ServiceProvider
 
     private function registerListener(): void
     {
-        $this->app['events']->listen("*", function (string $eventName, array $payload) {
+        $this->app['events']->listen('*', function (string $eventName, array $payload) {
             $event = array_pop($payload);
 
             if ($event instanceof ShouldReportMetric) {

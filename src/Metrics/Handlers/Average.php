@@ -44,7 +44,7 @@ final class Average extends AbstractMetricHandler
 
     public function validate(array $values): bool
     {
-        if (!parent::validate($values)) {
+        if (! parent::validate($values)) {
             return false;
         }
 
@@ -54,11 +54,12 @@ final class Average extends AbstractMetricHandler
                     if (isset($value['metadata']['count']) && $value['metadata']['count'] < 1) {
                         return false;
                     }
-                    if (isset($value['metadata']['sum']) && !is_numeric($value['metadata']['sum'])) {
+                    if (isset($value['metadata']['sum']) && ! is_numeric($value['metadata']['sum'])) {
                         return false;
                     }
                 }
             }
+
             return true;
         } catch (\Throwable) {
             return false;

@@ -10,7 +10,7 @@ beforeEach(function () {
 it('creates from values', function () {
     $values = [
         ['value' => 1, 'timestamp' => 1704103200], // 2024-01-01 10:00:00
-        ['value' => 2, 'timestamp' => 1704103800]  // 2024-01-01 10:10:00
+        ['value' => 2, 'timestamp' => 1704103800],  // 2024-01-01 10:10:00
     ];
 
     $window = RateWindow::fromValues($values, 3600);
@@ -45,14 +45,14 @@ it('calculates rate for empty window', function () {
         'interval' => 3600,
         'window_start' => 1704103200,
         'window_end' => 1704106800,
-        'metadata' => []
+        'metadata' => [],
     ]);
 });
 
 it('calculates rate for window with values', function () {
     $values = [
         ['value' => 1, 'timestamp' => 1704103200],
-        ['value' => 2, 'timestamp' => 1704103800]
+        ['value' => 2, 'timestamp' => 1704103800],
     ];
 
     $window = RateWindow::fromValues($values, 3600);
@@ -66,11 +66,11 @@ it('calculates rate for window with values', function () {
 
 it('merges windows', function () {
     $window1 = RateWindow::fromValues([
-        ['value' => 1, 'timestamp' => 1704103200]
+        ['value' => 1, 'timestamp' => 1704103200],
     ], 3600);
 
     $window2 = RateWindow::fromValues([
-        ['value' => 2, 'timestamp' => 1704103800]
+        ['value' => 2, 'timestamp' => 1704103800],
     ], 3600);
 
     $merged = $window1->merge($window2);
@@ -81,12 +81,12 @@ it('merges windows', function () {
 });
 
 it('throws exception for invalid interval', function () {
-    expect(fn() => RateWindow::fromTimestamps(1704103200, 1704106800, 0))
+    expect(fn () => RateWindow::fromTimestamps(1704103200, 1704106800, 0))
         ->toThrow(InvalidArgumentException::class);
 });
 
 it('throws exception when start is after end', function () {
-    expect(fn() => RateWindow::fromTimestamps(1704106800, 1704103200, 3600))
+    expect(fn () => RateWindow::fromTimestamps(1704106800, 1704103200, 3600))
         ->toThrow(InvalidArgumentException::class);
 });
 
@@ -99,7 +99,7 @@ it('serializes to array and json', function () {
         'duration' => 3600,
         'interval' => 3600,
         'value_count' => 0,
-        'metadata' => []
+        'metadata' => [],
     ];
 
     expect($window->array())->toEqual($expected)
@@ -109,5 +109,5 @@ it('serializes to array and json', function () {
 it('converts to string', function () {
     $window = RateWindow::fromTimestamps(1704103200, 1704106800, 3600);
 
-    expect((string)$window)->toBe('Rate[3600s] 2024-01-01 10:00:00 -> 2024-01-01 11:00:00 (0 values)');
+    expect((string) $window)->toBe('Rate[3600s] 2024-01-01 10:00:00 -> 2024-01-01 11:00:00 (0 values)');
 });

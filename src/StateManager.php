@@ -3,16 +3,16 @@
 namespace Ninja\Metronome;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Redis;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Metrics\Storage\Contracts\StateStorage;
-use Ninja\Metronome\Metrics\Storage\RedisMetricStorage;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 
 class StateManager
 {
     private const PROCESSED_WINDOWS_KEY = 'processed_windows';
+
     private const LAST_PROCESSING_KEY = 'last_processing';
+
     private const ERROR_COUNT_KEY = 'processing_errors';
 
     public function __construct(
@@ -58,6 +58,7 @@ class StateManager
     public function last(Aggregation $window): ?Carbon
     {
         $timestamp = $this->storage->get($this->key(self::LAST_PROCESSING_KEY, $window->value));
+
         return $timestamp ? Carbon::createFromTimestamp($timestamp) : null;
     }
 

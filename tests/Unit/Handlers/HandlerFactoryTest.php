@@ -1,23 +1,23 @@
 <?php
 
-use Ninja\Metronome\Metrics\Handlers\Counter;
-use Ninja\Metronome\Metrics\Handlers\Gauge;
-use Ninja\Metronome\Metrics\Handlers\HandlerFactory;
-use Ninja\Metronome\Metrics\Handlers\Rate;
-use Ninja\Metronome\Metrics\Handlers\Summary;
-use Ninja\Metronome\Metrics\Handlers\Histogram;
-use Ninja\Metronome\Metrics\Handlers\Percentage;
-use Ninja\Metronome\Metrics\Handlers\Average;
-use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Dto\Value\AverageMetricValue;
 use Ninja\Metronome\Dto\Value\CounterMetricValue;
 use Ninja\Metronome\Dto\Value\GaugeMetricValue;
 use Ninja\Metronome\Dto\Value\HistogramMetricValue;
-use Ninja\Metronome\Dto\Value\SummaryMetricValue;
-use Ninja\Metronome\Dto\Value\RateMetricValue;
 use Ninja\Metronome\Dto\Value\PercentageMetricValue;
-use Ninja\Metronome\Dto\Value\AverageMetricValue;
-use Ninja\Metronome\Exceptions\MetricHandlerNotFoundException;
+use Ninja\Metronome\Dto\Value\RateMetricValue;
+use Ninja\Metronome\Dto\Value\SummaryMetricValue;
+use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
+use Ninja\Metronome\Exceptions\MetricHandlerNotFoundException;
+use Ninja\Metronome\Metrics\Handlers\Average;
+use Ninja\Metronome\Metrics\Handlers\Counter;
+use Ninja\Metronome\Metrics\Handlers\Gauge;
+use Ninja\Metronome\Metrics\Handlers\HandlerFactory;
+use Ninja\Metronome\Metrics\Handlers\Histogram;
+use Ninja\Metronome\Metrics\Handlers\Percentage;
+use Ninja\Metronome\Metrics\Handlers\Rate;
+use Ninja\Metronome\Metrics\Handlers\Summary;
 
 beforeEach(function () {
     // Reset del singleton para cada test
@@ -44,30 +44,30 @@ test('compute method handles each metric type correctly', function (MetricType $
         'type' => MetricType::Counter,
         'values' => [
             ['value' => 10.0, 'timestamp' => time()],
-            ['value' => 20.0, 'timestamp' => time()]
+            ['value' => 20.0, 'timestamp' => time()],
         ],
-        'expected' => 30.0
+        'expected' => 30.0,
     ],
     'gauge takes latest value' => [
         'type' => MetricType::Gauge,
         'values' => [
             ['value' => 10.0, 'timestamp' => time() - 100],
-            ['value' => 20.0, 'timestamp' => time()]
+            ['value' => 20.0, 'timestamp' => time()],
         ],
-        'expected' => 20.0
+        'expected' => 20.0,
     ],
     'average calculates mean' => [
         'type' => MetricType::Average,
         'values' => [
             ['value' => 10.0, 'timestamp' => time()],
-            ['value' => 20.0, 'timestamp' => time()]
+            ['value' => 20.0, 'timestamp' => time()],
         ],
-        'expected' => 15.0
-    ]
+        'expected' => 15.0,
+    ],
 ]);
 
 test('compute method returns correct value type for each metric', function (MetricType $type, string $expectedClass) {
-    $values = [['value' => 10.0, 'metadata' => ['total' => 10 ],'timestamp' => time()]];
+    $values = [['value' => 10.0, 'metadata' => ['total' => 10], 'timestamp' => time()]];
     $result = HandlerFactory::compute($type, $values);
     expect($result)->toBeInstanceOf($expectedClass);
 })->with([
@@ -77,12 +77,12 @@ test('compute method returns correct value type for each metric', function (Metr
     'summary returns SummaryMetricValue' => [MetricType::Summary, SummaryMetricValue::class],
     'rate returns RateMetricValue' => [MetricType::Rate, RateMetricValue::class],
     'percentage returns PercentageMetricValue' => [MetricType::Percentage, PercentageMetricValue::class],
-    'average returns AverageMetricValue' => [MetricType::Average, AverageMetricValue::class]
+    'average returns AverageMetricValue' => [MetricType::Average, AverageMetricValue::class],
 ]);
 
 test('handlers validate input values correctly', function (MetricType $type, array $values, bool $valid) {
-    if (!$valid) {
-        expect(fn() => HandlerFactory::compute($type, $values))->toThrow(InvalidMetricException::class);
+    if (! $valid) {
+        expect(fn () => HandlerFactory::compute($type, $values))->toThrow(InvalidMetricException::class);
     } else {
         $result = HandlerFactory::compute($type, $values);
         expect($result)->not->toBeNull();
@@ -91,20 +91,20 @@ test('handlers validate input values correctly', function (MetricType $type, arr
     'counter accepts positive values' => [
         'type' => MetricType::Counter,
         'values' => [['value' => 10.0, 'timestamp' => time()]],
-        'valid' => true
+        'valid' => true,
     ],
     'counter rejects negative values' => [
         'type' => MetricType::Counter,
         'values' => [['value' => -10.0, 'timestamp' => time()]],
-        'valid' => false
+        'valid' => false,
     ],
     'average accepts multiple values' => [
         'type' => MetricType::Average,
         'values' => [
             ['value' => 10.0, 'timestamp' => time()],
-            ['value' => 20.0, 'timestamp' => time()]
+            ['value' => 20.0, 'timestamp' => time()],
         ],
-        'valid' => true
+        'valid' => true,
     ],
     'percentage requires total' => [
         'type' => MetricType::Percentage,
@@ -112,23 +112,24 @@ test('handlers validate input values correctly', function (MetricType $type, arr
             [
                 'value' => 75.0,
                 'timestamp' => time(),
-                'metadata' => ['total' => 100.0]
-            ]
+                'metadata' => ['total' => 100.0],
+            ],
         ],
-        'valid' => true
-    ]
+        'valid' => true,
+    ],
 ]);
 
 it('handles empty values appropriately for each type', function (MetricType $type) {
     if ($type === MetricType::Unknown) {
-        expect(fn() => HandlerFactory::compute($type, []))
+        expect(fn () => HandlerFactory::compute($type, []))
             ->toThrow(MetricHandlerNotFoundException::class, 'Metric handler for type unknown not found');
+
         return;
     }
 
     $result = HandlerFactory::compute($type, []);
     expect($result->value())->toEqual(0.0);
-})->with(fn() => array_map(fn($type) => [$type], MetricType::cases()));
+})->with(fn () => array_map(fn ($type) => [$type], MetricType::cases()));
 
 it('maintains handler configuration across multiple gets', function () {
     $handlers1 = HandlerFactory::handlers();
@@ -143,7 +144,7 @@ it('throws exception for unknown metric type', function () {
     $values = [['value' => 10.0, 'timestamp' => time()]];
     $unknownType = MetricType::Unknown;
 
-    expect(fn() => HandlerFactory::compute($unknownType, $values))
+    expect(fn () => HandlerFactory::compute($unknownType, $values))
         ->toThrow(MetricHandlerNotFoundException::class, 'Metric handler for type unknown not found');
 });
 
@@ -176,7 +177,7 @@ it('handles concurrent access safely', function () {
 test('factory returns consistent results for same input', function () {
     $values = [
         ['value' => 10.0, 'timestamp' => time()],
-        ['value' => 20.0, 'timestamp' => time()]
+        ['value' => 20.0, 'timestamp' => time()],
     ];
 
     $result1 = HandlerFactory::compute(MetricType::Counter, $values);

@@ -23,7 +23,7 @@ it('serializes to json', function () {
 
     $expected = [
         'value' => 10.5,
-        'metadata' => []
+        'metadata' => [],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -31,16 +31,16 @@ it('serializes to json', function () {
 });
 
 it('throws exception for negative values', function () {
-    expect(fn() => new CounterMetricValue(-1))
+    expect(fn () => new CounterMetricValue(-1))
         ->toThrow(InvalidArgumentException::class, 'Counter value must be non-negative');
 });
 
 test('counter values validation', function (float $value, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new CounterMetricValue($value))
+        expect(fn () => new CounterMetricValue($value))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new CounterMetricValue($value))
+        expect(fn () => new CounterMetricValue($value))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([
@@ -49,5 +49,5 @@ test('counter values validation', function (float $value, bool $shouldThrow) {
     [0.5, false],
     [PHP_FLOAT_MAX, false],
     [-1, true],
-    [-0.1, true]
+    [-0.1, true],
 ]);

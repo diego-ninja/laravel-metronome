@@ -10,7 +10,7 @@ final class RateMetricValue extends AbstractMetricValue
     {
         parent::__construct($value, [
             'interval' => $interval,
-            'count' => $count
+            'count' => $count,
         ]);
     }
 

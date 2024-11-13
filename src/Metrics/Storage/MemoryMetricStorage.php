@@ -25,6 +25,7 @@ use Throwable;
 final readonly class MemoryMetricStorage implements MetricStorage
 {
     private Table $storage;
+
     private Table $index;
 
     public function __construct(
@@ -60,8 +61,8 @@ final readonly class MemoryMetricStorage implements MetricStorage
             $this->updateIndex($indexKey, $storageKey, $expireAt);
         } catch (Throwable $e) {
             Log::error('Failed to store metric in memory', [
-                'key' => (string)$key,
-                'error' => $e->getMessage()
+                'key' => (string) $key,
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -74,11 +75,12 @@ final readonly class MemoryMetricStorage implements MetricStorage
     {
         $data = $this->storage->get($this->prefix($key));
 
-        if (!$data || $data['expire_at'] < time()) {
+        if (! $data || $data['expire_at'] < time()) {
             return $this->emptyValue($key->type);
         }
 
         $values = $this->extractValues($data);
+
         return HandlerFactory::compute($key->type, $values);
     }
 
@@ -90,6 +92,7 @@ final readonly class MemoryMetricStorage implements MetricStorage
         foreach ($this->storage as $key => $data) {
             if ($data['expire_at'] < time()) {
                 $this->storage->del($key);
+
                 continue;
             }
 
@@ -117,7 +120,7 @@ final readonly class MemoryMetricStorage implements MetricStorage
         $indexKey = $this->getIndexKey($window);
         $data = $this->index->get($indexKey);
 
-        if (!$data || $data['expire_at'] < time()) {
+        if (! $data || $data['expire_at'] < time()) {
             return true;
         }
 
@@ -154,7 +157,7 @@ final readonly class MemoryMetricStorage implements MetricStorage
 
         return [
             'total' => array_sum($counts),
-            'by_type' => $counts
+            'by_type' => $counts,
         ];
     }
 
@@ -165,9 +168,9 @@ final readonly class MemoryMetricStorage implements MetricStorage
             'metrics_count' => iterator_count($this->storage),
             'memory' => [
                 'size' => $this->storage->getSize(),
-                'memory_size' => $this->storage->getMemorySize()
+                'memory_size' => $this->storage->getMemorySize(),
             ],
-            'last_cleanup' => now()->toDateTimeString()
+            'last_cleanup' => now()->toDateTimeString(),
         ];
     }
 
@@ -175,14 +178,14 @@ final readonly class MemoryMetricStorage implements MetricStorage
     {
         $current = $this->storage->get($key);
         $newValue = $current ?
-            (float)json_decode($current['value'], true)['value'] + $value->value() :
+            (float) json_decode($current['value'], true)['value'] + $value->value() :
             $value->value();
 
         $this->storage->set($key, [
             'value' => json_encode(['value' => $newValue]),
             'type' => MetricType::Counter->value,
             'timestamp' => $timestamp,
-            'expire_at' => $expireAt
+            'expire_at' => $expireAt,
         ]);
     }
 
@@ -191,11 +194,11 @@ final readonly class MemoryMetricStorage implements MetricStorage
         $this->storage->set($key, [
             'value' => json_encode([
                 'value' => $value->value(),
-                'timestamp' => $timestamp
+                'timestamp' => $timestamp,
             ]),
             'type' => $type->value,
             'timestamp' => $timestamp,
-            'expire_at' => $expireAt
+            'expire_at' => $expireAt,
         ]);
     }
 
@@ -204,13 +207,13 @@ final readonly class MemoryMetricStorage implements MetricStorage
         $current = $this->index->get($indexKey);
         $keys = $current ? json_decode($current['keys'], true) : [];
 
-        if (!in_array($storageKey, $keys)) {
+        if (! in_array($storageKey, $keys)) {
             $keys[] = $storageKey;
         }
 
         $this->index->set($indexKey, [
             'keys' => json_encode($keys),
-            'expire_at' => $expireAt
+            'expire_at' => $expireAt,
         ]);
     }
 
@@ -228,11 +231,12 @@ final readonly class MemoryMetricStorage implements MetricStorage
     private function extractValues(array $data): array
     {
         $decoded = json_decode($data['value'], true);
+
         return [
             [
                 'value' => $decoded['value'],
-                'timestamp' => $decoded['timestamp'] ?? $data['timestamp']
-            ]
+                'timestamp' => $decoded['timestamp'] ?? $data['timestamp'],
+            ],
         ];
     }
 
@@ -251,15 +255,17 @@ final readonly class MemoryMetricStorage implements MetricStorage
 
     private function prefix(string|Key $key): string
     {
-        $key = $key instanceof Key ? (string)$key : $key;
+        $key = $key instanceof Key ? (string) $key : $key;
+
         return sprintf('%s:%s', $this->prefix, $key);
     }
 
     private function strip(string $key): string
     {
-        if (str_starts_with($key, $this->prefix . ':')) {
+        if (str_starts_with($key, $this->prefix.':')) {
             return substr($key, strlen($this->prefix) + 1);
         }
+
         return $key;
     }
 }

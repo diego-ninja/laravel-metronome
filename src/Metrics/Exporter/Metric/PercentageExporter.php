@@ -14,7 +14,7 @@ final readonly class PercentageExporter extends AbstractMetricExporter implement
             'type' => $this->type->value,
             'help' => Registry::get($this->name)->description(),
             'value' => $this->value(),
-            'labels' => $this->labels()
+            'labels' => $this->labels(),
         ];
     }
 }

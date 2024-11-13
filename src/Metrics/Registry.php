@@ -12,6 +12,7 @@ use Ninja\Metronome\Metrics\Definition\AbstractMetricDefinition;
 class Registry
 {
     private static bool $initialized = false;
+
     private static Collection $metrics;
 
     /**
@@ -27,10 +28,11 @@ class Registry
         self::ensureInitialized();
 
         $definition = self::get($name);
-        if (!$definition) {
+        if (! $definition) {
             if ($throwException) {
                 throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
             }
+
             return false;
         }
 
@@ -44,33 +46,40 @@ class Registry
         }
 
         self::$metrics = collect();
-//        foreach (config('devices.observability.metrics', []) as $metric) {
-//            self::register($metric::create());
-//        }
+        //        foreach (config('devices.observability.metrics', []) as $metric) {
+        //            self::register($metric::create());
+        //        }
         self::$initialized = true;
     }
 
     public static function get(string $name): ?AbstractMetricDefinition
     {
         self::ensureInitialized();
-        return self::$metrics->first(fn(AbstractMetricDefinition $metric) => $metric->name() === $name);
+
+        return self::$metrics->first(fn (AbstractMetricDefinition $metric) => $metric->name() === $name);
     }
 
     public static function all(): Collection
     {
         self::ensureInitialized();
+
         return self::$metrics;
     }
+
     public static function ofType(MetricType $type): Collection
     {
         self::ensureInitialized();
-        return self::$metrics->filter(fn($metric) => $metric->getType() === $type);
+
+        return self::$metrics->filter(fn ($metric) => $metric->getType() === $type);
     }
+
     public static function withLabel(string $label): Collection
     {
         self::ensureInitialized();
-        return self::$metrics->filter(fn($metric) => in_array($label, $metric->getLabels()));
+
+        return self::$metrics->filter(fn ($metric) => in_array($label, $metric->getLabels()));
     }
+
     public static function register(AbstractMetricDefinition $metric): void
     {
         self::ensureInitialized();
@@ -79,7 +88,7 @@ class Registry
 
     private static function ensureInitialized(): void
     {
-        if (!self::$initialized) {
+        if (! self::$initialized) {
             self::initialize();
         }
     }

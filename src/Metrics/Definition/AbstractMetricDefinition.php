@@ -13,11 +13,13 @@ use Str;
 abstract class AbstractMetricDefinition implements Arrayable
 {
     private array $buckets;
+
     private array $quantiles;
+
     private array $allowed_dimensions;
 
     public function __construct(
-        private ?string $name = null,
+        private ?string $name,
         private readonly MetricType $type,
         private readonly string $description,
         private readonly string $unit = '',
@@ -57,11 +59,11 @@ abstract class AbstractMetricDefinition implements Arrayable
                 throw InvalidMetricException::invalidType($this->name, $this->type, $type);
             }
 
-            if (!$dimensions->valid($this->required_dimensions, $this->allowed_dimensions)) {
+            if (! $dimensions->valid($this->required_dimensions, $this->allowed_dimensions)) {
                 throw InvalidMetricException::invalidDimensions($this->name, $dimensions->invalidDimensions($this->allowed_dimensions));
             }
 
-            if (!MetricValueValidator::validate($value, $this->min, $this->max)) {
+            if (! MetricValueValidator::validate($value, $this->min, $this->max)) {
                 throw InvalidMetricException::valueOutOfRange($this->name, $value->value(), $this->min, $this->max);
             }
 
@@ -70,10 +72,10 @@ abstract class AbstractMetricDefinition implements Arrayable
             if ($throwException) {
                 throw $e;
             }
+
             return false;
         }
     }
-
 
     public function name(): string
     {

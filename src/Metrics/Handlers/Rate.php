@@ -49,28 +49,30 @@ class Rate extends AbstractMetricHandler
     {
         try {
             foreach ($values as $value) {
-                if (!isset($value['value'], $value['timestamp'])) {
+                if (! isset($value['value'], $value['timestamp'])) {
                     return false;
                 }
-                if (!is_numeric($value['value']) || !is_numeric($value['timestamp'])) {
+                if (! is_numeric($value['value']) || ! is_numeric($value['timestamp'])) {
                     return false;
                 }
                 if ($value['value'] < 0) {
                     return false;
                 }
             }
+
             return true;
         } catch (\Throwable) {
             return false;
         }
     }
+
     protected function validateOrFail(array $values): void
     {
         foreach ($values as $value) {
-            if (!isset($value['value'], $value['timestamp'])) {
+            if (! isset($value['value'], $value['timestamp'])) {
                 throw new InvalidMetricException('Invalid metric values');
             }
-            if (!is_numeric($value['value']) || !is_numeric($value['timestamp'])) {
+            if (! is_numeric($value['value']) || ! is_numeric($value['timestamp'])) {
                 throw new InvalidMetricException('Invalid metric values');
             }
             if ($value['value'] < 0) {

@@ -15,7 +15,7 @@ final class Gauge extends AbstractMetricHandler
             return GaugeMetricValue::empty();
         }
 
-        usort($values, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
+        usort($values, fn ($a, $b) => $b['timestamp'] <=> $a['timestamp']);
         $latest = reset($values);
 
         return new GaugeMetricValue(

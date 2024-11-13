@@ -13,6 +13,7 @@ final readonly class RealtimeMetricExporter extends AbstractMetricExporter
     ) {
         parent::__construct();
     }
+
     protected function collect(): array
     {
         $metrics = [];
@@ -32,8 +33,8 @@ final readonly class RealtimeMetricExporter extends AbstractMetricExporter
                     'value' => $value->value(),
                     'labels' => [
                         ...$this->labels($decodedKey->dimensions),
-                        'window' => $decodedKey->window->value
-                    ]
+                        'window' => $decodedKey->window->value,
+                    ],
                 ];
             }
         }

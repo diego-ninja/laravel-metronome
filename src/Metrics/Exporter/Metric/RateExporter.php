@@ -16,7 +16,7 @@ final readonly class RateExporter extends AbstractMetricExporter
             'type' => MetricType::Gauge->value,
             'help' => $this->help(),
             'value' => $this->value(),
-            'labels' => $this->labels()
+            'labels' => $this->labels(),
         ];
     }
 }

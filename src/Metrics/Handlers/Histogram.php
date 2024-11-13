@@ -24,6 +24,7 @@ final class Histogram extends AbstractMetricHandler
 
         $this->buckets = $buckets;
     }
+
     public function compute(array $values): MetricValue
     {
         $this->validateOrFail($values);
@@ -44,11 +45,11 @@ final class Histogram extends AbstractMetricHandler
                 }
             }
         }
-        
+
         return new HistogramMetricValue(
             value: $mean,
             buckets: array_map(
-                fn($le, $count) => ['le' => $le, 'count' => $count],
+                fn ($le, $count) => ['le' => $le, 'count' => $count],
                 array_keys($buckets),
                 array_values($buckets)
             ),

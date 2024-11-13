@@ -15,7 +15,7 @@ final class HistogramMetricValue extends AbstractMetricValue
         parent::__construct($value, [
             'buckets' => $buckets,
             'count' => $count,
-            'sum' => $sum ?: $value
+            'sum' => $sum ?: $value,
         ]);
     }
 

@@ -1,8 +1,8 @@
 <?php
 
+use Ninja\Metronome\Dto\Value\HistogramMetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Handlers\Histogram;
-use Ninja\Metronome\Dto\Value\HistogramMetricValue;
 
 beforeEach(function () {
     $this->buckets = [10, 50, 100, 500, 1000];
@@ -62,24 +62,24 @@ it('handles empty values', function () {
 
 it('throws exception for negative values', function () {
     $values = [
-        ['value' => -5, 'timestamp' => time()]
+        ['value' => -5, 'timestamp' => time()],
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class);
 });
 
 it('validates buckets are provided', function () {
-    expect(fn() => new Histogram([]))
+    expect(fn () => new Histogram([]))
         ->toThrow(InvalidMetricException::class, 'Histogram must have buckets defined');
 });
 
 it('validates values are numeric', function () {
     $values = [
-        ['value' => 'not a number', 'timestamp' => time()]
+        ['value' => 'not a number', 'timestamp' => time()],
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class);
 });
 
@@ -90,31 +90,31 @@ test('histogram validation scenarios', function (array $values, array $buckets, 
     'valid values and buckets' => [
         'values' => [
             ['value' => 1.0, 'timestamp' => time()],
-            ['value' => 2.0, 'timestamp' => time()]
+            ['value' => 2.0, 'timestamp' => time()],
         ],
         'buckets' => [1, 5, 10],
-        'expected' => true
+        'expected' => true,
     ],
     'zero value valid' => [
         'values' => [['value' => 0.0, 'timestamp' => time()]],
         'buckets' => [1, 5, 10],
-        'expected' => true
+        'expected' => true,
     ],
     'negative value invalid' => [
         'values' => [['value' => -1.0, 'timestamp' => time()]],
         'buckets' => [1, 5, 10],
-        'expected' => false
+        'expected' => false,
     ],
     'missing value key' => [
         'values' => [['timestamp' => time()]],
         'buckets' => [1, 5, 10],
-        'expected' => false
+        'expected' => false,
     ],
     'non-numeric value' => [
         'values' => [['value' => 'string', 'timestamp' => time()]],
         'buckets' => [1, 5, 10],
-        'expected' => false
-    ]
+        'expected' => false,
+    ],
 ]);
 
 function getBucketCount(array $buckets, float $bucket): int
@@ -124,5 +124,6 @@ function getBucketCount(array $buckets, float $bucket): int
             return $b['count'];
         }
     }
+
     return 0;
 }

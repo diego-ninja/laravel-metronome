@@ -1,11 +1,11 @@
 <?php
 
+use Ninja\Metronome\Dto\Value\CounterMetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Handlers\Counter;
-use Ninja\Metronome\Dto\Value\CounterMetricValue;
 
 it('computes sum of counter values', function () {
-    $handler = new Counter();
+    $handler = new Counter;
     $values = [
         ['value' => 10.5, 'timestamp' => time()],
         ['value' => 5.5, 'timestamp' => time()],
@@ -18,7 +18,7 @@ it('computes sum of counter values', function () {
 });
 
 it('validates valid counter values', function () {
-    $handler = new Counter();
+    $handler = new Counter;
     $values = [
         ['value' => 10.5, 'timestamp' => time()],
         ['value' => 5.5, 'timestamp' => time()],
@@ -28,7 +28,7 @@ it('validates valid counter values', function () {
 });
 
 it('handles empty values', function () {
-    $handler = new Counter();
+    $handler = new Counter;
     $result = $handler->compute([]);
 
     expect($result)->toBeInstanceOf(CounterMetricValue::class)
@@ -36,40 +36,40 @@ it('handles empty values', function () {
 });
 
 test('counter validation scenarios', function (array $values, bool $expected) {
-    $handler = new Counter();
+    $handler = new Counter;
     expect($handler->validate($values))->toBe($expected);
 })->with([
     'valid values' => [
         'values' => [
             ['value' => 1.0, 'timestamp' => time()],
-            ['value' => 2.0, 'timestamp' => time()]
+            ['value' => 2.0, 'timestamp' => time()],
         ],
-        'expected' => true
+        'expected' => true,
     ],
     'zero value valid' => [
         'values' => [['value' => 0.0, 'timestamp' => time()]],
-        'expected' => true
+        'expected' => true,
     ],
     'negative value invalid' => [
         'values' => [['value' => -1.0, 'timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'missing value key' => [
         'values' => [['timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'non-numeric value' => [
         'values' => [['value' => 'string', 'timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
 ]);
 
 it('throws exception when computing invalid values', function () {
-    $handler = new Counter();
+    $handler = new Counter;
     $values = [
-        ['value' => -1.0, 'timestamp' => time()]
+        ['value' => -1.0, 'timestamp' => time()],
     ];
 
-    expect(fn() => $handler->compute($values))
+    expect(fn () => $handler->compute($values))
         ->toThrow(InvalidMetricException::class);
 });

@@ -14,7 +14,7 @@ final readonly class PrometheusTextFormatter
             $output[] = $this->value($metric);
         }
 
-        return implode("\n", $output) . "\n";
+        return implode("\n", $output)."\n";
     }
 
     private function help(array $metric): string
@@ -43,10 +43,10 @@ final readonly class PrometheusTextFormatter
     {
         $labelPairs = [];
         foreach ($metric['labels'] as $label) {
-            $labelPairs[] = sprintf('%s="%s"', $label["name"], $this->label($label["value"]));
+            $labelPairs[] = sprintf('%s="%s"', $label['name'], $this->label($label['value']));
         }
 
-        $labels = empty($labelPairs) ? '' : '{' . implode(',', $labelPairs) . '}';
+        $labels = empty($labelPairs) ? '' : '{'.implode(',', $labelPairs).'}';
 
         return sprintf(
             '%s%s %s',
@@ -69,6 +69,7 @@ final readonly class PrometheusTextFormatter
         if (is_nan($value)) {
             return 'NaN';
         }
+
         return sprintf('%.14g', $value);
     }
 }

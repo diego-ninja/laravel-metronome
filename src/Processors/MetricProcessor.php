@@ -18,8 +18,7 @@ final readonly class MetricProcessor implements Processor
     public function __construct(
         private MetricStorage $storage,
         private MetricAggregationRepository $repository
-    ) {
-    }
+    ) {}
 
     /**
      * @throws MetricHandlerNotFoundException
@@ -27,7 +26,7 @@ final readonly class MetricProcessor implements Processor
      */
     public function process(Processable $item): void
     {
-        if (!$item instanceof Metric) {
+        if (! $item instanceof Metric) {
             throw new InvalidArgumentException('Invalid processable type');
         }
 

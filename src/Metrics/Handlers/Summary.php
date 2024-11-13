@@ -37,7 +37,7 @@ final class Summary extends AbstractMetricHandler
 
         if (empty($values)) {
             $emptyQuantiles = array_combine(
-                array_map(fn($q) => (string)$q, $this->quantiles),
+                array_map(fn ($q) => (string) $q, $this->quantiles),
                 array_fill(0, count($this->quantiles), 0.0)
             );
 
@@ -68,7 +68,7 @@ final class Summary extends AbstractMetricHandler
                 $quantileValue = $nums[$index];
             }
 
-            $computedQuantiles[(string)$q] = $quantileValue;
+            $computedQuantiles[(string) $q] = $quantileValue;
         }
 
         return new SummaryMetricValue(

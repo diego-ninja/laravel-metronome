@@ -16,8 +16,7 @@ abstract readonly class AbstractMetricExporter implements Exportable
         public MetricType $type,
         public float|array $value,
         public DimensionCollection $dimensions,
-    ) {
-    }
+    ) {}
 
     public static function from(Metric|array|string $metric): self
     {
@@ -47,7 +46,7 @@ abstract readonly class AbstractMetricExporter implements Exportable
 
     public function value(?string $key = null): string
     {
-        return is_array($this->value) ? $this->value[$key ?? "value"] : (string) $this->value;
+        return is_array($this->value) ? $this->value[$key ?? 'value'] : (string) $this->value;
     }
 
     abstract public function export(): array;

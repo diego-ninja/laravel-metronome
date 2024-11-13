@@ -14,7 +14,7 @@ final class PercentageMetricValue extends AbstractMetricValue
         parent::__construct($value, [
             'total' => $total,
             'count' => $count,
-            'percentage' => $total > 0 ? ($value / $total) * 100 : 0
+            'percentage' => $total > 0 ? ($value / $total) * 100 : 0,
         ]);
     }
 
@@ -36,7 +36,7 @@ final class PercentageMetricValue extends AbstractMetricValue
             throw new InvalidArgumentException('Percentage value cannot be greater than total');
         }
 
-        if (!isset($this->metadata['count']) || $this->metadata['count'] < 1) {
+        if (! isset($this->metadata['count']) || $this->metadata['count'] < 1) {
             throw new InvalidArgumentException('Percentage count must be positive');
         }
     }

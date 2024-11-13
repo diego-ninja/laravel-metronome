@@ -17,7 +17,7 @@ class Percentage extends AbstractMetricHandler
         }
 
         foreach ($values as $value) {
-            if (!isset($value['metadata']['total'])) {
+            if (! isset($value['metadata']['total'])) {
                 throw new InvalidMetricException('Percentage total must be provided');
             }
 
@@ -44,10 +44,10 @@ class Percentage extends AbstractMetricHandler
     {
         try {
             foreach ($values as $value) {
-                if (!isset($value['value'], $value['metadata']['total'])) {
+                if (! isset($value['value'], $value['metadata']['total'])) {
                     return false;
                 }
-                if (!is_numeric($value['value']) || !is_numeric($value['metadata']['total'])) {
+                if (! is_numeric($value['value']) || ! is_numeric($value['metadata']['total'])) {
                     return false;
                 }
                 if ($value['value'] < 0 || $value['metadata']['total'] < 0) {
@@ -57,6 +57,7 @@ class Percentage extends AbstractMetricHandler
                     return false;
                 }
             }
+
             return true;
         } catch (Throwable) {
             return false;

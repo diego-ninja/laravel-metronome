@@ -102,7 +102,7 @@ final readonly class TimeWindow implements JsonSerializable, Stringable
             'to' => $this->to->toDateTimeString(),
             'slot' => $this->slot,
             'aggregation' => $this->aggregation->value,
-            'duration' => $this->duration()
+            'duration' => $this->duration(),
         ];
     }
 

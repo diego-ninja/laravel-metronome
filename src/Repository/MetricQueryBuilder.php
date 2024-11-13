@@ -18,22 +18,29 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
     private const METRIC_TABLE = 'device_metrics';
 
     private array $dimensions = [];
+
     private array $types = [];
+
     private ?Aggregation $window = null;
+
     private ?TimeRange $timeRange = null;
+
     private ?string $name = null;
+
     private array $orderBy = [];
+
     private ?int $limit = null;
+
     private array $having = [];
+
     private array $joins = [];
 
-    public function __construct(private readonly Builder $query)
-    {
-    }
+    public function __construct(private readonly Builder $query) {}
 
     public function withDimension(string $name, string $value): self
     {
         $this->dimensions[] = ['name' => $name, 'value' => $value];
+
         return $this;
     }
 
@@ -42,12 +49,14 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         foreach ($dimensions as $dimension) {
             $this->withDimension($dimension->name, $dimension->value);
         }
+
         return $this;
     }
 
     public function withType(MetricType $type): self
     {
         $this->types[] = $type;
+
         return $this;
     }
 
@@ -56,30 +65,35 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         foreach ($types as $type) {
             $this->withType($type);
         }
+
         return $this;
     }
 
     public function withWindow(Aggregation $window): self
     {
         $this->window = $window;
+
         return $this;
     }
 
     public function withTimeRange(TimeRange $timeRange): self
     {
         $this->timeRange = $timeRange;
+
         return $this;
     }
 
     public function withName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
     public function orderBy(string $column, string $direction = 'asc'): self
     {
         $this->orderBy[] = [$column, $direction];
+
         return $this;
     }
 
@@ -96,12 +110,12 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
     public function groupByDimension(string $dimension): self
     {
         $this->query->addSelect([
-            DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dimensions, '$." . $dimension . "')) as " . $dimension),
+            DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dimensions, '$.".$dimension."')) as ".$dimension),
             DB::raw('AVG(computed) as average_value'),
             DB::raw('COUNT(*) as count'),
             DB::raw('MIN(computed) as min_value'),
-            DB::raw('MAX(computed) as max_value')
-        ])->groupBy(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dimensions, '$." . $dimension . "'))"));
+            DB::raw('MAX(computed) as max_value'),
+        ])->groupBy(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dimensions, '$.".$dimension."'))"));
 
         return $this;
     }
@@ -112,8 +126,8 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         $groupBys = [];
 
         foreach ($dimensions as $dimension) {
-            $extractExpr = "JSON_UNQUOTE(JSON_EXTRACT(dimensions, '$." . $dimension . "'))";
-            $selects[] = DB::raw("$extractExpr as " . $dimension);
+            $extractExpr = "JSON_UNQUOTE(JSON_EXTRACT(dimensions, '$.".$dimension."'))";
+            $selects[] = DB::raw("$extractExpr as ".$dimension);
             $groupBys[] = DB::raw($extractExpr);
         }
 
@@ -121,7 +135,7 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
             DB::raw('AVG(computed) as average_value'),
             DB::raw('COUNT(*) as count'),
             DB::raw('MIN(computed) as min_value'),
-            DB::raw('MAX(computed) as max_value')
+            DB::raw('MAX(computed) as max_value'),
         ]);
 
         $this->query->addSelect($selects)->groupBy($groupBys);
@@ -134,8 +148,8 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         $timeExpr = match ($interval) {
             '1 minute' => "DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00')",
             '1 hour' => "DATE_FORMAT(timestamp, '%Y-%m-%d %H:00:00')",
-            '1 day' => "DATE(timestamp)",
-            '1 week' => "DATE(DATE_SUB(timestamp, INTERVAL WEEKDAY(timestamp) DAY))",
+            '1 day' => 'DATE(timestamp)',
+            '1 week' => 'DATE(DATE_SUB(timestamp, INTERVAL WEEKDAY(timestamp) DAY))',
             '1 month' => "DATE_FORMAT(timestamp, '%Y-%m-01')",
             default => throw new InvalidArgumentException("Unsupported interval: $interval")
         };
@@ -145,7 +159,7 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
             DB::raw('AVG(computed) as average_value'),
             DB::raw('COUNT(*) as count'),
             DB::raw('MIN(computed) as min_value'),
-            DB::raw('MAX(computed) as max_value')
+            DB::raw('MAX(computed) as max_value'),
         ])->groupBy(DB::raw($timeExpr));
 
         return $this;
@@ -182,9 +196,9 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         $this->query->addSelect([
             'm1.name as metric_name',
             'm2.name as correlated_metric',
-            DB::raw('CORR(m1.computed, m2.computed) as correlation')
+            DB::raw('CORR(m1.computed, m2.computed) as correlation'),
         ])
-            ->join(self::METRIC_TABLE . ' as m2', function ($join) {
+            ->join(self::METRIC_TABLE.' as m2', function ($join) {
                 $join->on('m1.timestamp', '=', 'm2.timestamp')
                     ->where('m1.name', '<>', 'm2.name');
             })
@@ -198,7 +212,7 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
     {
         $this->query->addSelect([
             '*',
-            DB::raw('(computed - LAG(computed) OVER (ORDER BY timestamp)) / LAG(computed) OVER (ORDER BY timestamp) * 100 as change_rate')
+            DB::raw('(computed - LAG(computed) OVER (ORDER BY timestamp)) / LAG(computed) OVER (ORDER BY timestamp) * 100 as change_rate'),
         ]);
 
         return $this;
@@ -210,12 +224,12 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         ?Closure $callback = null,
         string $joinType = 'inner'
     ): self {
-        $alias = $alias ?? 'm' . (count($this->joins) + 2);
-        $table = self::METRIC_TABLE . ' AS ' . $alias;
+        $alias = $alias ?? 'm'.(count($this->joins) + 2);
+        $table = self::METRIC_TABLE.' AS '.$alias;
 
-        $this->query->{$joinType . 'Join'}($table, function ($join) use ($metricName, $alias, $callback) {
-            $join->on($this->getMainTableAlias() . '.timestamp', '=', $alias . '.timestamp')
-                ->where($alias . '.name', '=', $metricName);
+        $this->query->{$joinType.'Join'}($table, function ($join) use ($metricName, $alias, $callback) {
+            $join->on($this->getMainTableAlias().'.timestamp', '=', $alias.'.timestamp')
+                ->where($alias.'.name', '=', $metricName);
 
             if ($callback) {
                 $callback($join);
@@ -224,21 +238,25 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
 
         return $this;
     }
+
     public function limit(int $limit): self
     {
         $this->limit = $limit;
+
         return $this;
     }
 
     public function havingValue(string $operator, float $value): self
     {
         $this->having[] = ['computed', $operator, $value];
+
         return $this;
     }
 
     public function get(): Collection
     {
         $this->applyConstraints();
+
         return $this->query->get()->map(fn ($row) => Metric::from($row));
     }
 
@@ -246,36 +264,42 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
     {
         $this->applyConstraints();
         $result = $this->query->first();
+
         return $result ? Metric::from($result) : null;
     }
 
     public function count(): int
     {
         $this->applyConstraints();
+
         return $this->query->count();
     }
 
     public function sum(): float
     {
         $this->applyConstraints();
+
         return (float) $this->query->sum('computed');
     }
 
     public function avg(): float
     {
         $this->applyConstraints();
+
         return (float) $this->query->avg('computed');
     }
 
     public function min(): float
     {
         $this->applyConstraints();
+
         return (float) $this->query->min('computed');
     }
 
     public function max(): float
     {
         $this->applyConstraints();
+
         return (float) $this->query->max('computed');
     }
 
@@ -283,7 +307,7 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
     {
         $allowedFunctions = ['AVG', 'SUM', 'MIN', 'MAX', 'COUNT', 'STDDEV', 'VARIANCE'];
 
-        if (!in_array(strtoupper($function), $allowedFunctions)) {
+        if (! in_array(strtoupper($function), $allowedFunctions)) {
             throw new InvalidArgumentException("Unsupported aggregate function: $function");
         }
 
@@ -326,7 +350,6 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         return $results;
     }
 
-
     private function calculateHistogram(int $bins = 10): array
     {
         $stats = $this->query->selectRaw('
@@ -348,7 +371,7 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
             $histogram[] = [
                 'bin' => $i + 1,
                 'range' => [$min, $max],
-                'count' => $count
+                'count' => $count,
             ];
         }
 
@@ -361,8 +384,8 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
             $this->query->where('name', $this->name);
         }
 
-        if (!empty($this->types)) {
-            $this->query->whereIn('type', array_map(fn($type) => $type->value, $this->types));
+        if (! empty($this->types)) {
+            $this->query->whereIn('type', array_map(fn ($type) => $type->value, $this->types));
         }
 
         if ($this->window) {
@@ -372,7 +395,7 @@ class MetricQueryBuilder implements Contracts\MetricQueryBuilder
         if ($this->timeRange) {
             $this->query->whereBetween('timestamp', [
                 $this->timeRange->from,
-                $this->timeRange->to
+                $this->timeRange->to,
             ]);
         }
 

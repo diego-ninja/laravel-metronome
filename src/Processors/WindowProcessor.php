@@ -32,7 +32,7 @@ final class WindowProcessor implements Processor
 
     public function process(Processable $item): void
     {
-        if (!$item instanceof Window) {
+        if (! $item instanceof Window) {
             throw new InvalidArgumentException('Invalid processable type');
         }
 
@@ -86,9 +86,9 @@ final class WindowProcessor implements Processor
                     $window->aggregation === $windowType &&
                     $window->from->lt(now()) &&
                     $window->slot < $windowType->timeslot(now()) &&
-                    !$this->processed($window);
+                    ! $this->processed($window);
             })
-            ->unique(fn(TimeWindow $w) => $w->slot);
+            ->unique(fn (TimeWindow $w) => $w->slot);
     }
 
     private function processed(TimeWindow $window): bool

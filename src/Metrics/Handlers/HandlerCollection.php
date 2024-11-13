@@ -17,13 +17,14 @@ final readonly class HandlerCollection
 
     public static function fromArray(array $handlers): self
     {
-        $collection = new self();
+        $collection = new self;
         foreach ($handlers as $type => $handler) {
             $collection->add(
                 MetricType::from($type),
                 $handler
             );
         }
+
         return $collection;
     }
 
@@ -31,9 +32,11 @@ final readonly class HandlerCollection
     {
         return self::fromArray($handlers);
     }
+
     public function add(MetricType $type, MetricHandler $handler): self
     {
         $this->handlers->put($type->value, $handler);
+
         return $this;
     }
 
@@ -50,11 +53,13 @@ final readonly class HandlerCollection
     public function remove(MetricType $type): self
     {
         $this->handlers->forget($type->value);
+
         return $this;
     }
+
     public function types(): Collection
     {
-        return $this->handlers->keys()->map(fn($key) => MetricType::from($key));
+        return $this->handlers->keys()->map(fn ($key) => MetricType::from($key));
     }
 
     public function __call(string $method, array $arguments): mixed

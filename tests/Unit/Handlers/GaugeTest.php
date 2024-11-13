@@ -1,11 +1,11 @@
 <?php
 
+use Ninja\Metronome\Dto\Value\GaugeMetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Handlers\Gauge;
-use Ninja\Metronome\Dto\Value\GaugeMetricValue;
 
 it('computes latest gauge value', function () {
-    $handler = new Gauge();
+    $handler = new Gauge;
     $now = time();
     $values = [
         ['value' => 10.5, 'timestamp' => $now - 60],
@@ -21,7 +21,7 @@ it('computes latest gauge value', function () {
 });
 
 it('validates valid gauge values', function () {
-    $handler = new Gauge();
+    $handler = new Gauge;
     $values = [
         ['value' => 10.5, 'timestamp' => time()],
         ['value' => 5.5, 'timestamp' => time()],
@@ -31,7 +31,7 @@ it('validates valid gauge values', function () {
 });
 
 it('handles empty values', function () {
-    $handler = new Gauge();
+    $handler = new Gauge;
     $result = $handler->compute([]);
 
     expect($result)->toBeInstanceOf(GaugeMetricValue::class)
@@ -41,7 +41,7 @@ it('handles empty values', function () {
 });
 
 it('always uses most recent timestamp', function () {
-    $handler = new Gauge();
+    $handler = new Gauge;
     $now = time();
     $values = [
         ['value' => 10.5, 'timestamp' => $now - 60],
@@ -54,40 +54,40 @@ it('always uses most recent timestamp', function () {
 });
 
 test('gauge validation scenarios', function (array $values, bool $expected) {
-    $handler = new Gauge();
+    $handler = new Gauge;
     expect($handler->validate($values))->toBe($expected);
 })->with([
     'valid values' => [
         'values' => [
             ['value' => 1.0, 'timestamp' => time()],
-            ['value' => 2.0, 'timestamp' => time()]
+            ['value' => 2.0, 'timestamp' => time()],
         ],
-        'expected' => true
+        'expected' => true,
     ],
     'zero value valid' => [
         'values' => [['value' => 0.0, 'timestamp' => time()]],
-        'expected' => true
+        'expected' => true,
     ],
     'negative value invalid' => [
         'values' => [['value' => -1.0, 'timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'missing value key' => [
         'values' => [['timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'non-numeric value' => [
         'values' => [['value' => 'string', 'timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
 ]);
 
 it('throws exception when computing invalid values', function () {
-    $handler = new Gauge();
+    $handler = new Gauge;
     $values = [
-        ['value' => -1.0, 'timestamp' => time()]
+        ['value' => -1.0, 'timestamp' => time()],
     ];
 
-    expect(fn() => $handler->compute($values))
+    expect(fn () => $handler->compute($values))
         ->toThrow(InvalidMetricException::class);
 });

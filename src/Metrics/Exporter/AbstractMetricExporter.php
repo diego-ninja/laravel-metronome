@@ -10,9 +10,10 @@ use Ninja\Metronome\Metrics\Formatter\PrometheusTextFormatter;
 abstract readonly class AbstractMetricExporter implements MetricExporter
 {
     protected PrometheusTextFormatter $formatter;
+
     public function __construct()
     {
-        $this->formatter = new PrometheusTextFormatter();
+        $this->formatter = new PrometheusTextFormatter;
     }
 
     abstract protected function collect(): array;

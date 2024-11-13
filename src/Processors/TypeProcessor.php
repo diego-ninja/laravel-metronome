@@ -30,7 +30,7 @@ final readonly class TypeProcessor implements Processor
      */
     public function process(Processable $item): void
     {
-        if (!$item instanceof Type) {
+        if (! $item instanceof Type) {
             throw new InvalidArgumentException('Invalid processable type');
         }
 

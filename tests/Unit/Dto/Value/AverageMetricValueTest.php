@@ -10,7 +10,7 @@ it('creates average metric value', function () {
         ->and($value->count())->toBe(2)
         ->and($value->metadata())->toEqual([
             'sum' => 20.0,
-            'count' => 2
+            'count' => 2,
         ]);
 });
 
@@ -22,17 +22,17 @@ it('creates empty average metric value', function () {
         ->and($value->count())->toBe(1)
         ->and($value->metadata())->toEqual([
             'sum' => 0.0,
-            'count' => 1
+            'count' => 1,
         ]);
 });
 
 it('validates average calculation', function () {
-    expect(fn() => new AverageMetricValue(11.0, 20.0, 2))
+    expect(fn () => new AverageMetricValue(11.0, 20.0, 2))
         ->toThrow(InvalidArgumentException::class, 'Average value must be sum/count');
 });
 
 it('validates count is positive', function () {
-    expect(fn() => new AverageMetricValue(10.0, 20.0, 0))
+    expect(fn () => new AverageMetricValue(10.0, 20.0, 0))
         ->toThrow(InvalidArgumentException::class, 'Average count must be positive');
 });
 
@@ -43,8 +43,8 @@ it('serializes to json', function () {
         'value' => 10.0,
         'metadata' => [
             'sum' => 20.0,
-            'count' => 2
-        ]
+            'count' => 2,
+        ],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -53,10 +53,10 @@ it('serializes to json', function () {
 
 test('average value validation scenarios', function (float $value, float $sum, int $count, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new AverageMetricValue($value, $sum, $count))
+        expect(fn () => new AverageMetricValue($value, $sum, $count))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new AverageMetricValue($value, $sum, $count))
+        expect(fn () => new AverageMetricValue($value, $sum, $count))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([

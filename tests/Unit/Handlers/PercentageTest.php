@@ -1,11 +1,11 @@
 <?php
 
-use Ninja\Metronome\Metrics\Handlers\Percentage;
 use Ninja\Metronome\Dto\Value\PercentageMetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
+use Ninja\Metronome\Metrics\Handlers\Percentage;
 
 beforeEach(function () {
-    $this->handler = new Percentage();
+    $this->handler = new Percentage;
 });
 
 it('computes percentage correctly', function () {
@@ -35,7 +35,7 @@ it('handles empty values', function () {
 
 it('handles zero total correctly', function () {
     $values = [
-        ['value' => 0, 'timestamp' => time(), 'metadata' => ['total' => 0]]
+        ['value' => 0, 'timestamp' => time(), 'metadata' => ['total' => 0]],
     ];
 
     $result = $this->handler->compute($values);
@@ -45,37 +45,37 @@ it('handles zero total correctly', function () {
 
 it('throws exception for missing total', function () {
     $values = [
-        ['value' => 75, 'timestamp' => time()]  // Sin total
+        ['value' => 75, 'timestamp' => time()],  // Sin total
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class, 'Percentage total must be provided');
 });
 
 it('throws exception for negative values', function () {
     $values = [
-        ['value' => -75, 'timestamp' => time(), 'metadata' => ['total' => 100]]
+        ['value' => -75, 'timestamp' => time(), 'metadata' => ['total' => 100]],
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class, 'Percentage value must be non-negative');
 });
 
 it('throws exception for negative total', function () {
     $values = [
-        ['value' => 75, 'timestamp' => time(), 'metadata' => ['total' => -100]]
+        ['value' => 75, 'timestamp' => time(), 'metadata' => ['total' => -100]],
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class, 'Percentage total must be non-negative');
 });
 
 it('throws exception when value exceeds total', function () {
     $values = [
-        ['value' => 150, 'timestamp' => time(), 'metadata' => ['total' => 100]]
+        ['value' => 150, 'timestamp' => time(), 'metadata' => ['total' => 100]],
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class, 'Percentage value cannot be greater than total');
 });
 
@@ -85,43 +85,43 @@ test('percentage validation scenarios', function (array $values, bool $expected)
     'valid values' => [
         'values' => [
             ['value' => 75.0, 'timestamp' => time(), 'metadata' => ['total' => 100]],
-            ['value' => 150.0, 'timestamp' => time(), 'metadata' => ['total' => 200]]
+            ['value' => 150.0, 'timestamp' => time(), 'metadata' => ['total' => 200]],
         ],
-        'expected' => true
+        'expected' => true,
     ],
     'zero values valid' => [
         'values' => [['value' => 0.0, 'timestamp' => time(), 'metadata' => ['total' => 100]]],
-        'expected' => true
+        'expected' => true,
     ],
     'negative value invalid' => [
         'values' => [['value' => -1.0, 'timestamp' => time(), 'metadata' => ['total' => 100]]],
-        'expected' => false
+        'expected' => false,
     ],
     'missing value' => [
         'values' => [['timestamp' => time(), 'metadata' => ['total' => 100]]],
-        'expected' => false
+        'expected' => false,
     ],
     'missing total' => [
         'values' => [['value' => 75.0, 'timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'value exceeds total' => [
         'values' => [['value' => 150.0, 'timestamp' => time(), 'metadata' => ['total' => 100]]],
-        'expected' => false
-    ]
+        'expected' => false,
+    ],
 ]);
 
 it('accumulates multiple values correctly', function () {
     $values = [
         ['value' => 30, 'timestamp' => time(), 'metadata' => ['total' => 100]], // 30%
         ['value' => 40, 'timestamp' => time(), 'metadata' => ['total' => 100]], // 40%
-        ['value' => 60, 'timestamp' => time(), 'metadata' => ['total' => 200]]  // 30%
+        ['value' => 60, 'timestamp' => time(), 'metadata' => ['total' => 200]],  // 30%
     ];
 
     $result = $this->handler->compute($values);
 
     expect($result->value())->toBe(130.0)       // 30 + 40 + 60
-    ->and($result->total())->toBe(400.0)    // 100 + 100 + 200
-    ->and($result->percentage())->toBe(32.5) // (130/400)*100
-    ->and($result->count())->toBe(3);
+        ->and($result->total())->toBe(400.0)    // 100 + 100 + 200
+        ->and($result->percentage())->toBe(32.5) // (130/400)*100
+        ->and($result->count())->toBe(3);
 });

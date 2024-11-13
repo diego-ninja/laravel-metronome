@@ -18,14 +18,13 @@ final class DimensionCollection extends Collection implements \JsonSerializable,
         }
 
         if (empty($data)) {
-            return new self();
+            return new self;
         }
 
         return new self(
-            array_map(fn($dimension) => Dimension::from($dimension), $data),
+            array_map(fn ($dimension) => Dimension::from($dimension), $data),
         );
     }
-
 
     public function valid(array $required, array $allowed): bool
     {
@@ -36,7 +35,7 @@ final class DimensionCollection extends Collection implements \JsonSerializable,
 
     public function names(): array
     {
-        return array_map(fn(Dimension $dimension) => $dimension->name, $this->toArray());
+        return array_map(fn (Dimension $dimension) => $dimension->name, $this->toArray());
     }
 
     public function invalidDimensions(array $allowedDimensions): array

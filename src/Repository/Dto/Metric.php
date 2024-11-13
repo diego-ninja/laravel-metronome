@@ -18,8 +18,7 @@ readonly class Metric implements JsonSerializable
         public Carbon $timestamp,
         public DimensionCollection $dimensions,
         public Aggregation $aggregation
-    ) {
-    }
+    ) {}
 
     public function fingerprint(): string
     {

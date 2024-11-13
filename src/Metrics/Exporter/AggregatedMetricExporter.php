@@ -15,6 +15,7 @@ final readonly class AggregatedMetricExporter extends AbstractMetricExporter
     ) {
         parent::__construct();
     }
+
     protected function collect(): array
     {
         $aggregation = $this->aggregation();

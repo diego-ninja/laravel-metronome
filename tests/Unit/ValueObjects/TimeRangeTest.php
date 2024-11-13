@@ -77,7 +77,7 @@ it('throws exception when from is after to', function () {
     $from = Carbon::parse('2024-01-01 11:00:00');
     $to = Carbon::parse('2024-01-01 10:00:00');
 
-    expect(fn() => new TimeRange($from, $to))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new TimeRange($from, $to))->toThrow(InvalidArgumentException::class);
 });
 
 it('serializes to json', function () {
@@ -88,7 +88,7 @@ it('serializes to json', function () {
     $expected = [
         'from' => $from->toDateTimeString(),
         'to' => $to->toDateTimeString(),
-        'duration' => 3600
+        'duration' => 3600,
     ];
 
     expect($range->jsonSerialize())->toEqual($expected)
@@ -100,5 +100,5 @@ it('converts to string', function () {
     $to = Carbon::parse('2024-01-01 11:00:00');
     $range = new TimeRange($from, $to);
 
-    expect((string)$range)->toBe('2024-01-01 10:00:00 -> 2024-01-01 11:00:00');
+    expect((string) $range)->toBe('2024-01-01 10:00:00 -> 2024-01-01 11:00:00');
 });

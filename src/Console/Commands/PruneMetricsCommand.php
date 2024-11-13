@@ -22,6 +22,7 @@ final class PruneMetricsCommand extends Command
 
         if ($window === 'all') {
             $this->pruneAll($storage);
+
             return;
         }
 

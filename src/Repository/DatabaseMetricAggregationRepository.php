@@ -4,12 +4,9 @@ namespace Ninja\Metronome\Repository;
 
 use Carbon\Carbon;
 use DB;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 use Ninja\Metronome\Contracts\MetricValue;
-use Ninja\Metronome\Dto\Dimension;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Dto\Value\AverageMetricValue;
 use Ninja\Metronome\Dto\Value\CounterMetricValue;
@@ -23,7 +20,6 @@ use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Metrics\Handlers\HandlerFactory;
 use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 use Ninja\Metronome\Repository\Dto\Metric;
-use Ninja\Metronome\ValueObjects\TimeRange;
 use Throwable;
 
 class DatabaseMetricAggregationRepository implements MetricAggregationRepository
@@ -52,7 +48,7 @@ class DatabaseMetricAggregationRepository implements MetricAggregationRepository
         } catch (Throwable $e) {
             Log::error('Failed to store metric', [
                 'metric' => $metric->array(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             throw $e;
@@ -110,15 +106,16 @@ class DatabaseMetricAggregationRepository implements MetricAggregationRepository
     {
         try {
             $value = json_decode($stored, true);
+
             return HandlerFactory::compute($type, [
-                ['value' => (float)( $value['value'] ?? $stored), 'metadata' => $metadata]
+                ['value' => (float) ($value['value'] ?? $stored), 'metadata' => $metadata],
             ]);
         } catch (Throwable $e) {
             Log::error('Failed to reconstruct metric value', [
                 'type' => $type->value,
                 'stored' => $stored,
                 'metadata' => $metadata,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return match ($type) {

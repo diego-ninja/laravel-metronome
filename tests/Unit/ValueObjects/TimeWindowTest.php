@@ -71,7 +71,7 @@ it('creates from array', function () {
         'from' => '2024-01-01 10:00:00',
         'to' => '2024-01-01 11:00:00',
         'slot' => 1704103200,
-        'aggregation' => 'hourly'
+        'aggregation' => 'hourly',
     ];
 
     $window = TimeWindow::from($data);
@@ -94,8 +94,8 @@ it('throws exception when from is after to', function () {
         'from' => '2024-01-01 11:00:00', // After to
         'to' => '2024-01-01 10:00:00',
         'slot' => 1704103200,
-        'aggregation' => 'hourly'
+        'aggregation' => 'hourly',
     ];
 
-    expect(fn() => TimeWindow::from($data))->toThrow(InvalidArgumentException::class);
+    expect(fn () => TimeWindow::from($data))->toThrow(InvalidArgumentException::class);
 });

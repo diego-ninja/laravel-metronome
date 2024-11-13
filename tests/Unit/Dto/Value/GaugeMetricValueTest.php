@@ -35,7 +35,7 @@ it('serializes to json', function () {
 
     $expected = [
         'value' => 10.5,
-        'metadata' => ['timestamp' => $timestamp]
+        'metadata' => ['timestamp' => $timestamp],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -43,16 +43,16 @@ it('serializes to json', function () {
 });
 
 it('throws exception for negative values', function () {
-    expect(fn() => new GaugeMetricValue(-1))
+    expect(fn () => new GaugeMetricValue(-1))
         ->toThrow(InvalidArgumentException::class, 'Gauge value must be non-negative');
 });
 
 test('gauge values validation', function (float $value, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new GaugeMetricValue($value))
+        expect(fn () => new GaugeMetricValue($value))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new GaugeMetricValue($value))
+        expect(fn () => new GaugeMetricValue($value))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([
@@ -61,5 +61,5 @@ test('gauge values validation', function (float $value, bool $shouldThrow) {
     [0.5, false],
     [PHP_FLOAT_MAX, false],
     [-1, true],
-    [-0.1, true]
+    [-0.1, true],
 ]);

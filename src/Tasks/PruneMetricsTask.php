@@ -11,6 +11,7 @@ use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 final readonly class PruneMetricsTask
 {
     private MetricAggregationRepository $repository;
+
     private MetricStorage $realtime;
 
     private function __construct(private Aggregation $aggregation, private Storage $storage, private ?OutputStyle $output = null)

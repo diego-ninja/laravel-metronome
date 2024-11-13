@@ -83,7 +83,7 @@ final readonly class TimeRange implements JsonSerializable, Stringable
         return [
             'from' => $this->from->toDateTimeString(),
             'to' => $this->to->toDateTimeString(),
-            'duration' => $this->duration()
+            'duration' => $this->duration(),
         ];
     }
 

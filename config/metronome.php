@@ -42,7 +42,7 @@ return [
             'connection' => 'metrics',
             'memory' => [
                 'max_size' => 10000,
-            ]
+            ],
         ],
         'state' => [
             'driver' => 'redis',
@@ -74,7 +74,7 @@ return [
     */
     'aggregation' => [
         'windows' => Aggregation::cases(), // Realtime, Hourly, Daily, Weekly, Monthly, Yearly
-        'retention' => [] //Override default retention period for each aggregation window
+        'retention' => [], //Override default retention period for each aggregation window
     ],
 
     /*
@@ -88,8 +88,8 @@ return [
     'metrics' => [
         'providers' => [
         ],
-        "collectors" => [
-        ]
+        'collectors' => [
+        ],
     ],
     'dimensions' => [],
     'buckets' => Bucket::Default->scale(),

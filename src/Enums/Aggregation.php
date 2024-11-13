@@ -14,7 +14,6 @@ enum Aggregation: string
     case Monthly = 'monthly';
     case Yearly = 'yearly';
 
-
     public function seconds(): int
     {
         return match ($this) {
@@ -61,6 +60,7 @@ enum Aggregation: string
         $timestamp ??= now();
 
         $seconds = $this->seconds();
+
         return floor($timestamp->timestamp / $seconds) * $seconds;
     }
 

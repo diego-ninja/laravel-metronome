@@ -6,9 +6,7 @@ use Ninja\Metronome\Contracts\MetricValue;
 
 final class MetricValueValidator
 {
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     public static function validate(
         MetricValue $value,
@@ -16,7 +14,7 @@ final class MetricValueValidator
         ?float $max = null,
         bool $allowNegative = false
     ): bool {
-        if (!$allowNegative && $value->value() < 0) {
+        if (! $allowNegative && $value->value() < 0) {
             return false;
         }
 
@@ -28,6 +26,6 @@ final class MetricValueValidator
             return false;
         }
 
-        return !is_infinite($value->value()) && !is_nan($value->value());
+        return ! is_infinite($value->value()) && ! is_nan($value->value());
     }
 }

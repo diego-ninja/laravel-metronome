@@ -44,7 +44,7 @@ trait ProvidesMetrics
     {
         return property_exists($this, 'metricDimensions')
             ? new DimensionCollection($this->metricDimensions)
-            : new DimensionCollection();
+            : new DimensionCollection;
     }
 
     public function metricValue(): MetricValue

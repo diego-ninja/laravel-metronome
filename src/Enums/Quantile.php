@@ -14,6 +14,7 @@ enum Quantile: string
     {
         return [0.5, 0.75, 0.9, 0.95, 0.99];
     }
+
     public function value(): float
     {
         return match ($this) {

@@ -13,17 +13,17 @@ final class AverageMetricValue extends AbstractMetricValue
     ) {
         parent::__construct($value, [
             'sum' => $sum,
-            'count' => $count
+            'count' => $count,
         ]);
     }
 
     protected function validate(): void
     {
-        if (!isset($this->metadata['sum'])) {
+        if (! isset($this->metadata['sum'])) {
             throw new InvalidArgumentException('Average sum must be provided');
         }
 
-        if (!isset($this->metadata['count']) || $this->metadata['count'] < 1) {
+        if (! isset($this->metadata['count']) || $this->metadata['count'] < 1) {
             throw new InvalidArgumentException('Average count must be positive');
         }
 
@@ -41,6 +41,7 @@ final class AverageMetricValue extends AbstractMetricValue
             count: 1
         );
     }
+
     public function sum(): float
     {
         return $this->metadata['sum'];

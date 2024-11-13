@@ -3,7 +3,6 @@
 namespace Ninja\Metronome\Metrics\Storage;
 
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -45,7 +44,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                     MetricType::Counter => $pipe->incrbyfloat($metricKey, $value->value()),
                     MetricType::Gauge => $pipe->set($metricKey, json_encode([
                         'value' => $value->value(),
-                        'timestamp' => $timestamp->timestamp
+                        'timestamp' => $timestamp->timestamp,
                     ])),
                     MetricType::Histogram,
                     MetricType::Summary,
@@ -53,7 +52,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                     MetricType::Percentage,
                     MetricType::Rate => $pipe->zadd($metricKey, $timestamp->timestamp, json_encode([
                         'value' => $value->value(),
-                        'timestamp' => $timestamp->timestamp
+                        'timestamp' => $timestamp->timestamp,
                     ]))
                 };
 
@@ -63,7 +62,7 @@ final readonly class RedisMetricStorage implements MetricStorage
             Log::error('Failed to store metric', [
                 'key' => $metricKey,
                 'value' => $value,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -89,7 +88,7 @@ final readonly class RedisMetricStorage implements MetricStorage
 
             return match ($key->type) {
                 MetricType::Counter => [
-                    ['value' => (float) ($this->redis->get($metricKey) ?: 0)]
+                    ['value' => (float) ($this->redis->get($metricKey) ?: 0)],
                 ],
                 MetricType::Gauge => $this->gauge($metricKey),
                 MetricType::Histogram,
@@ -100,10 +99,11 @@ final readonly class RedisMetricStorage implements MetricStorage
             };
         } catch (Throwable $e) {
             Log::error('Failed to fetch metric value', [
-                'key' => (string)$key,
+                'key' => (string) $key,
                 'type' => $key->type->value,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -111,16 +111,17 @@ final readonly class RedisMetricStorage implements MetricStorage
     private function gauge(string $key): array
     {
         $value = $this->redis->get($key);
-        if (!$value) {
+        if (! $value) {
             return [];
         }
 
         $decoded = json_decode($value, true);
+
         return [
             [
-                'value' => (float)($decoded['value'] ?? 0),
-                'timestamp' => $decoded['timestamp'] ?? time()
-            ]
+                'value' => (float) ($decoded['value'] ?? 0),
+                'timestamp' => $decoded['timestamp'] ?? time(),
+            ],
         ];
     }
 
@@ -135,8 +136,8 @@ final readonly class RedisMetricStorage implements MetricStorage
         foreach ($values as $value => $score) {
             $decoded = json_decode($value, true);
             $result[] = [
-                'value' => (float)($decoded['value'] ?? 0),
-                'timestamp' => (int)$score
+                'value' => (float) ($decoded['value'] ?? 0),
+                'timestamp' => (int) $score,
             ];
         }
 
@@ -163,7 +164,8 @@ final readonly class RedisMetricStorage implements MetricStorage
         }
 
         $keys = $this->redis->keys($this->prefix($pattern)) ?: [];
-        return array_map(fn($key) => $this->strip($key), $keys);
+
+        return array_map(fn ($key) => $this->strip($key), $keys);
     }
 
     public function delete(TimeWindow|array $keys): void
@@ -176,7 +178,7 @@ final readonly class RedisMetricStorage implements MetricStorage
             return;
         }
 
-        $metricKeys = array_map(fn($key) => $this->prefix($key), $keys);
+        $metricKeys = array_map(fn ($key) => $this->prefix($key), $keys);
 
         $this->redis->pipeline(function ($pipe) use ($metricKeys) {
             foreach ($metricKeys as $key) {
@@ -200,7 +202,7 @@ final readonly class RedisMetricStorage implements MetricStorage
 
         return [
             'total' => array_sum($counts),
-            'by_type' => $counts
+            'by_type' => $counts,
         ];
     }
 
@@ -238,7 +240,7 @@ final readonly class RedisMetricStorage implements MetricStorage
                 'status' => 'healthy',
                 'used_memory' => $info['used_memory_human'],
                 'total_keys' => array_sum(array_map(
-                    fn($db) => $db['keys'],
+                    fn ($db) => $db['keys'],
                     $keyspace
                 )),
                 'metrics_keys' => count($this->keys(
@@ -257,13 +259,13 @@ final readonly class RedisMetricStorage implements MetricStorage
                     'used_memory' => $info['used_memory'],
                     'used_memory_peak' => $info['used_memory_peak'],
                     'memory_fragmentation_ratio' => $info['mem_fragmentation_ratio'],
-                ]
+                ],
             ];
         } catch (Throwable $e) {
             return [
                 'status' => 'error',
                 'error' => $e->getMessage(),
-                'last_check' => now()->toDateTimeString()
+                'last_check' => now()->toDateTimeString(),
             ];
         }
     }
@@ -275,9 +277,9 @@ final readonly class RedisMetricStorage implements MetricStorage
             return [];
         }
 
-        return array_map(fn($value, $score) => [
-            'value' => (float)$value,
-            'timestamp' => (int)$score
+        return array_map(fn ($value, $score) => [
+            'value' => (float) $value,
+            'timestamp' => (int) $score,
         ], array_keys($values), array_values($values));
     }
 
@@ -290,9 +292,10 @@ final readonly class RedisMetricStorage implements MetricStorage
 
         return array_map(function ($value, $score) {
             $decoded = json_decode($value, true);
+
             return [
                 'value' => (float) ($decoded['value'] ?? $value),
-                'timestamp' => (int) $score
+                'timestamp' => (int) $score,
             ];
         }, array_keys($values), array_values($values));
     }
@@ -301,7 +304,7 @@ final readonly class RedisMetricStorage implements MetricStorage
     {
         $key = $key instanceof Key ? (string) $key : $key;
 
-        if (str_starts_with($key, sprintf("%s:", $this->prefix))) {
+        if (str_starts_with($key, sprintf('%s:', $this->prefix))) {
             return $key;
         }
 
@@ -316,7 +319,7 @@ final readonly class RedisMetricStorage implements MetricStorage
             $key = substr($key, strlen($redisPrefix));
         }
 
-        if (str_starts_with($key, $this->prefix . ':')) {
+        if (str_starts_with($key, $this->prefix.':')) {
             return substr($key, strlen($this->prefix) + 1);
         }
 

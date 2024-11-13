@@ -7,7 +7,6 @@ use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Processors\WindowProcessor;
 use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 use Ninja\Metronome\Tasks\ProcessMetricsTask;
-use Ninja\Metronome\Tasks\PruneMetricsTask;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 use Throwable;
 
@@ -24,6 +23,7 @@ final class ProcessMetricsCommand extends Command
     {
         parent::__construct();
     }
+
     public function handle(): void
     {
         $aggregation = Aggregation::tryFrom($this->argument('window'));
@@ -54,6 +54,7 @@ final class ProcessMetricsCommand extends Command
 
         if ($pendingWindows->isEmpty()) {
             $this->info('No pending windows found.');
+
             return;
         }
 
@@ -73,17 +74,17 @@ final class ProcessMetricsCommand extends Command
                     $pendingWindow->aggregation->value,
                     $pendingWindow->from->toDateTimeString(),
                     $pendingWindow->to->toDateTimeString(),
-                    'Success'
+                    'Success',
                 ];
             } catch (Throwable $e) {
                 $table[] = [
                     $pendingWindow->aggregation->value,
                     $pendingWindow->from->toDateTimeString(),
                     $pendingWindow->to->toDateTimeString(),
-                    'Failed: ' . $e->getMessage()
+                    'Failed: '.$e->getMessage(),
                 ];
 
-                if (!$this->option('force')) {
+                if (! $this->option('force')) {
                     throw $e;
                 }
             }
@@ -104,7 +105,7 @@ final class ProcessMetricsCommand extends Command
                 ['Error Count', $this->processor->state()->errors($window)],
                 ['Window Type', $window->value],
                 ['Retention Period', config(sprintf('devices.observability.aggregation.retention.%s', $window->value), '7 days')],
-                ['Pending Windows', $this->processor->pending($window)->count()]
+                ['Pending Windows', $this->processor->pending($window)->count()],
             ]
         );
     }
@@ -124,7 +125,7 @@ final class ProcessMetricsCommand extends Command
                 ['Error Count', $this->processor->state()->errors($window)],
                 ['Last Success', $this->processor->state()->last($window)?->diffForHumans() ?? 'Never'],
                 ['Error', $e->getMessage()],
-                ['Trace', $e->getTraceAsString()]
+                ['Trace', $e->getTraceAsString()],
             ]
         );
 

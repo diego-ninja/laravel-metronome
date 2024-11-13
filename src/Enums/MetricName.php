@@ -58,7 +58,6 @@ enum MetricName: string
     case SecuritySuspiciousActivity = 'security_suspicious_activity';
     case SecurityRiskDistribution = 'security_risk_distribution';
 
-
     // Métricas de Comportamiento
     case BehaviorPageTime = 'behavior_page_time';
     case BehaviorNavigationDepth = 'behavior_navigation_depth';

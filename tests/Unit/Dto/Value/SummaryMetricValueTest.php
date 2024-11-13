@@ -10,7 +10,7 @@ it('creates summary metric value', function () {
         ->and($value->metadata())->toEqual([
             'quantiles' => $quantiles,
             'count' => 10,
-            'sum' => 155.0
+            'sum' => 155.0,
         ]);
 });
 
@@ -21,12 +21,12 @@ it('creates empty summary metric value', function () {
         ->and($value->metadata())->toEqual([
             'quantiles' => [0.5], // Esperamos el quantil por defecto
             'count' => 1,
-            'sum' => 0.0
+            'sum' => 0.0,
         ]);
 });
 
 it('throws exception for empty quantiles', function () {
-    expect(fn() => new SummaryMetricValue(10.0, []))
+    expect(fn () => new SummaryMetricValue(10.0, []))
         ->toThrow(InvalidArgumentException::class, 'Summary must have quantiles defined');
 });
 
@@ -51,8 +51,8 @@ it('serializes to json', function () {
         'metadata' => [
             'quantiles' => $quantiles,
             'count' => 10,
-            'sum' => 155.0
-        ]
+            'sum' => 155.0,
+        ],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -61,10 +61,10 @@ it('serializes to json', function () {
 
 test('summary validation scenarios', function (float $value, array $quantiles, ?int $count, ?float $sum, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new SummaryMetricValue($value, $quantiles, $count, $sum))
+        expect(fn () => new SummaryMetricValue($value, $quantiles, $count, $sum))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new SummaryMetricValue($value, $quantiles, $count, $sum))
+        expect(fn () => new SummaryMetricValue($value, $quantiles, $count, $sum))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([

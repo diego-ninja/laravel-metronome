@@ -15,7 +15,7 @@ final class SummaryMetricValue extends AbstractMetricValue
         parent::__construct($value, [
             'quantiles' => $quantiles,
             'count' => $count,
-            'sum' => $sum ?: $value
+            'sum' => $sum ?: $value,
         ]);
     }
 

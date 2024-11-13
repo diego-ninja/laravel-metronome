@@ -1,8 +1,8 @@
 <?php
 
-use Ninja\Metronome\Metrics\Handlers\Rate;
 use Ninja\Metronome\Dto\Value\RateMetricValue;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
+use Ninja\Metronome\Metrics\Handlers\Rate;
 
 beforeEach(function () {
     $this->interval = 3600; // 1 hora
@@ -50,16 +50,16 @@ it('handles single timestamp events', function () {
 });
 
 it('validates positive interval', function () {
-    expect(fn() => new Rate(0))
+    expect(fn () => new Rate(0))
         ->toThrow(InvalidMetricException::class, 'Rate interval must be positive');
 });
 
 it('throws exception for negative values', function () {
     $values = [
-        ['value' => -1, 'timestamp' => time()]
+        ['value' => -1, 'timestamp' => time()],
     ];
 
-    expect(fn() => $this->handler->compute($values))
+    expect(fn () => $this->handler->compute($values))
         ->toThrow(InvalidMetricException::class, 'Rate value must be non-negative');
 });
 
@@ -69,26 +69,26 @@ test('rate validation scenarios', function (array $values, bool $expected) {
     'valid values' => [
         'values' => [
             ['value' => 1.0, 'timestamp' => time()],
-            ['value' => 2.0, 'timestamp' => time() - 300]
+            ['value' => 2.0, 'timestamp' => time() - 300],
         ],
-        'expected' => true
+        'expected' => true,
     ],
     'zero value valid' => [
         'values' => [['value' => 0.0, 'timestamp' => time()]],
-        'expected' => true
+        'expected' => true,
     ],
     'negative value invalid' => [
         'values' => [['value' => -1.0, 'timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'missing value key' => [
         'values' => [['timestamp' => time()]],
-        'expected' => false
+        'expected' => false,
     ],
     'missing timestamp key' => [
         'values' => [['value' => 1.0]],
-        'expected' => false
-    ]
+        'expected' => false,
+    ],
 ]);
 
 it('computes correct rate for different time spans', function () {
@@ -99,22 +99,22 @@ it('computes correct rate for different time spans', function () {
                 ['value' => 1, 'timestamp' => $now - 3600],      // 1 hora atrás
                 ['value' => 1, 'timestamp' => $now],             // ahora
             ],
-            'expected_rate' => 1.0                               // 1 evento por hora
+            'expected_rate' => 1.0,                               // 1 evento por hora
         ],
         [
             'values' => [
                 ['value' => 1, 'timestamp' => $now - 1800],      // 30 min atrás
                 ['value' => 1, 'timestamp' => $now],             // ahora
             ],
-            'expected_rate' => 2.0                               // 2 eventos por hora
+            'expected_rate' => 2.0,                               // 2 eventos por hora
         ],
         [
             'values' => [
                 ['value' => 1, 'timestamp' => $now - 900],       // 15 min atrás
                 ['value' => 1, 'timestamp' => $now],             // ahora
             ],
-            'expected_rate' => 4.0                               // 4 eventos por hora
-        ]
+            'expected_rate' => 4.0,                               // 4 eventos por hora
+        ],
     ];
 
     foreach ($testCases as $case) {

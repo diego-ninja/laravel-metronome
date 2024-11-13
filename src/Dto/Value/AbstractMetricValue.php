@@ -5,7 +5,7 @@ namespace Ninja\Metronome\Dto\Value;
 use InvalidArgumentException;
 use Ninja\Metronome\Contracts\MetricValue;
 
-abstract class AbstractMetricValue implements MetricValue, \JsonSerializable
+abstract class AbstractMetricValue implements \JsonSerializable, MetricValue
 {
     public function __construct(
         protected readonly float $value,
@@ -28,7 +28,7 @@ abstract class AbstractMetricValue implements MetricValue, \JsonSerializable
     {
         return [
             'value' => $this->value,
-            'metadata' => $this->metadata
+            'metadata' => $this->metadata,
         ];
     }
 

@@ -9,9 +9,9 @@ use Ninja\Metronome\ValueObjects\TimeRange;
 class MetricCriteria
 {
     /**
-     * @param string[]|null $names
-     * @param MetricType[]|null $types
-     * @param Aggregation[]|null $windows
+     * @param  string[]|null  $names
+     * @param  MetricType[]|null  $types
+     * @param  Aggregation[]|null  $windows
      */
     public function __construct(
         public ?array $names = null,
@@ -19,8 +19,7 @@ class MetricCriteria
         public ?array $windows = null,
         public ?TimeRange $timeRange = null,
         public ?array $dimensions = null
-    ) {
-    }
+    ) {}
 
     public static function forName(string $name): self
     {

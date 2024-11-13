@@ -11,7 +11,7 @@ final readonly class CounterExporter extends AbstractMetricExporter
             'type' => $this->type->value,
             'help' => $this->help(),
             'value' => $this->value(),
-            'labels' => $this->labels()
+            'labels' => $this->labels(),
         ];
     }
 }

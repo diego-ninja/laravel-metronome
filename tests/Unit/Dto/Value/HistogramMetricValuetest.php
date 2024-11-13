@@ -10,7 +10,7 @@ it('creates histogram metric value', function () {
         ->and($value->metadata())->toEqual([
             'buckets' => $buckets,
             'count' => 1,
-            'sum' => 15.5
+            'sum' => 15.5,
         ]);
 });
 
@@ -21,17 +21,17 @@ it('creates empty histogram metric value', function () {
         ->and($value->metadata())->toEqual([
             'buckets' => [],
             'count' => 1,
-            'sum' => 0.0
+            'sum' => 0.0,
         ]);
 });
 
 it('throws exception for negative values', function () {
-    expect(fn() => new HistogramMetricValue(-1, [10, 20]))
+    expect(fn () => new HistogramMetricValue(-1, [10, 20]))
         ->toThrow(InvalidArgumentException::class, 'Histogram value must be non-negative');
 });
 
 it('throws exception for empty buckets', function () {
-    expect(fn() => new HistogramMetricValue(10, []))
+    expect(fn () => new HistogramMetricValue(10, []))
         ->toThrow(InvalidArgumentException::class, 'Histogram must have buckets defined');
 });
 
@@ -56,8 +56,8 @@ it('serializes to json', function () {
         'metadata' => [
             'buckets' => $buckets,
             'count' => 2,
-            'sum' => 31.0
-        ]
+            'sum' => 31.0,
+        ],
     ];
 
     expect($value->array())->toEqual($expected)
@@ -66,10 +66,10 @@ it('serializes to json', function () {
 
 test('histogram validation scenarios', function (float $value, array $buckets, ?int $count, ?float $sum, bool $shouldThrow) {
     if ($shouldThrow) {
-        expect(fn() => new HistogramMetricValue($value, $buckets, $count, $sum))
+        expect(fn () => new HistogramMetricValue($value, $buckets, $count, $sum))
             ->toThrow(InvalidArgumentException::class);
     } else {
-        expect(fn() => new HistogramMetricValue($value, $buckets, $count, $sum))
+        expect(fn () => new HistogramMetricValue($value, $buckets, $count, $sum))
             ->not->toThrow(InvalidArgumentException::class);
     }
 })->with([
