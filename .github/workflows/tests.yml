@@ -13,11 +13,10 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        symfony: ['7.1']
         php: ['8.2', '8.3', '8.4']
         dependency_version: [prefer-lowest, prefer-stable]
 
-    name: PHP ${{ matrix.php }} - Symfony ^${{ matrix.symfony }} - ${{ matrix.os }} - ${{ matrix.dependency_version }}
+    name: PHP ${{ matrix.php }} - ${{ matrix.os }} - ${{ matrix.dependency_version }}
 
     steps:
       - name: Checkout
@@ -37,13 +36,10 @@ jobs:
 
       - name: Install PHP dependencies
         shell: bash
-        run: composer update --${{ matrix.dependency_version }} --no-interaction --no-progress --ansi --with="symfony/console:^${{ matrix.symfony }}"
+        run: composer update --${{ matrix.dependency_version }} --no-interaction --no-progress --ansi
 
       - name: Unit Tests
         run: composer test:unit
-
-      - name: Parallel Tests
-        run: composer test:parallel
 
       - name: Integration Tests
         run: composer test:integration

@@ -26,6 +26,9 @@
         "pestphp/pest": "^2 || ^3",
         "pestphp/pest-dev-tools": "^3.3.0",
         "pestphp/pest-plugin-type-coverage": "^3.1.0",
+        "pestphp/pest-plugin": "^3.0.0",
+        "pestphp/pest-plugin-arch": "^3.0.0",
+        "pestphp/pest-plugin-mutate": "^3.0.5",
         "squizlabs/php_codesniffer": "^3.7",
         "swoole/ide-helper": "~5.0.0"
     },
