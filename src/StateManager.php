@@ -19,7 +19,7 @@ class StateManager
         private readonly StateStorage $storage,
         private string $prefix = '',
     ) {
-        $this->prefix = $prefix ?: config('devices.observability.prefix');
+        $this->prefix = $prefix ?: config('metronome.prefix');
     }
 
     public function success(TimeWindow $window): void

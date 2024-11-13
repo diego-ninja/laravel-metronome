@@ -4,13 +4,13 @@ namespace Ninja\Metronome;
 
 use Carbon\Laravel\ServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\File;
 use Laravel\Octane\Facades\Octane;
 use Ninja\Metronome\Console\Commands\ProcessMetricsCommand;
 use Ninja\Metronome\Console\Commands\PruneMetricsCommand;
 use Ninja\Metronome\Contracts\ShouldReportMetric;
 use Ninja\Metronome\Enums\Aggregation;
-use Ninja\Metronome\MetricAggregator;
-use Ninja\Metronome\MetricManager;
+use Ninja\Metronome\Metrics\Contracts\Discoverable;
 use Ninja\Metronome\Metrics\Registry;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
 use Ninja\Metronome\Metrics\Storage\Contracts\StateStorage;
@@ -21,7 +21,6 @@ use Ninja\Metronome\Processors\TypeProcessor;
 use Ninja\Metronome\Processors\WindowProcessor;
 use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 use Ninja\Metronome\Repository\DatabaseMetricAggregationRepository;
-use Ninja\Metronome\StateManager;
 use Ninja\Metronome\Tasks\ProcessMetricsTask;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 
@@ -108,6 +107,11 @@ final class MetronomeServiceProvider extends ServiceProvider
         $this->registerMetricCollectors();
         $this->registerMetricProcessor();
         $this->registerListener();
+
+        if (config('metronome.metrics.auto_discover')) {
+            \Log::info('Auto-discovering metric definitions');
+            $this->discoverMetricDefinitions(app_path());
+        }
     }
 
     private function registerCommands(): void
@@ -177,5 +181,16 @@ final class MetronomeServiceProvider extends ServiceProvider
                 collect($event->metric());
             }
         });
+    }
+
+    private function discoverMetricDefinitions(string $rootDirectory): void
+    {
+        collect(File::allFiles($rootDirectory))
+            ->filter(fn ($file) => $file->getExtension() === 'php')
+            ->filter(fn ($class) => class_exists($class) && is_subclass_of($class, Discoverable::class))
+            ->each(function ($class) {
+                \Log::info(sprintf('Registering metric definition: %s', $class));
+                Registry::register($class::create());
+            });
     }
 }

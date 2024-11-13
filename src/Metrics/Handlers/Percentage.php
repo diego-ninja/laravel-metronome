@@ -12,6 +12,7 @@ class Percentage extends AbstractMetricHandler
 {
     public function compute(array $values): MetricValue
     {
+        print_r($values);
         if (empty($values)) {
             return new PercentageMetricValue(0.0, 0.0, 0);
         }

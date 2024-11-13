@@ -7,10 +7,11 @@ use Ninja\Metronome\Contracts\MetricValue;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
+use Ninja\Metronome\Metrics\Contracts\Discoverable;
 use Ninja\Metronome\Metrics\Handlers\Validators\MetricValueValidator;
 use Str;
 
-abstract class AbstractMetricDefinition implements Arrayable
+abstract class AbstractMetricDefinition implements Arrayable, Discoverable
 {
     private array $buckets;
 

@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create(self::TABLE, function (Blueprint $table) {
             $table->id();
-            $table->string('metric_fingerprint', 64)->primary();
+            $table->string('metric_fingerprint', 64);
             $table->string('name');
             $table->string('type', 32);
             $table->float('computed');

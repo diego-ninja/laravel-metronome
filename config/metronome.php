@@ -86,6 +86,7 @@ return [
     | and collectors are used to listen for events and collect metrics.
     */
     'metrics' => [
+        'auto_discover' => true,
         'providers' => [
         ],
         'collectors' => [

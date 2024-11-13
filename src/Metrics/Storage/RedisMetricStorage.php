@@ -3,6 +3,7 @@
 namespace Ninja\Metronome\Metrics\Storage;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -17,6 +18,7 @@ use Ninja\Metronome\Dto\Value\RateMetricValue;
 use Ninja\Metronome\Dto\Value\SummaryMetricValue;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Exceptions\MetricHandlerNotFoundException;
 use Ninja\Metronome\Metrics\Handlers\HandlerFactory;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
@@ -70,6 +72,7 @@ final readonly class RedisMetricStorage implements MetricStorage
 
     /**
      * @throws MetricHandlerNotFoundException
+     * @throws InvalidMetricException
      */
     public function value(Key $key): MetricValue
     {
@@ -95,7 +98,8 @@ final readonly class RedisMetricStorage implements MetricStorage
                 MetricType::Summary,
                 MetricType::Average,
                 MetricType::Rate,
-                MetricType::Percentage => $this->timeseries($metricKey)
+                MetricType::Percentage => $this->timeseries($metricKey),
+                MetricType::Unknown => throw new Exception('To be implemented')
             };
         } catch (Throwable $e) {
             Log::error('Failed to fetch metric value', [
