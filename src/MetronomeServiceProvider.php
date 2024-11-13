@@ -1,6 +1,6 @@
 <?php
 
-namespace Ninja\Metronome\Provider;
+namespace Ninja\Metronome;
 
 use Carbon\Laravel\ServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
