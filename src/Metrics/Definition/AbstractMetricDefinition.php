@@ -5,7 +5,9 @@ namespace Ninja\Metronome\Metrics\Definition;
 use Illuminate\Contracts\Support\Arrayable;
 use Ninja\Metronome\Contracts\MetricValue;
 use Ninja\Metronome\Dto\DimensionCollection;
+use Ninja\Metronome\Enums\Bucket;
 use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Enums\Quantile;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Contracts\Discoverable;
 use Ninja\Metronome\Metrics\Handlers\Validators\MetricValueValidator;
@@ -33,13 +35,13 @@ abstract class AbstractMetricDefinition implements Arrayable, Discoverable
         private readonly ?float $max = null,
     ) {
         $this->name = $name ?: $this->guessName();
-        $this->allowed_dimensions = array_merge(config('devices.observability.dimensions', []), $allowed_dimensions);
+        $this->allowed_dimensions = array_merge(config('metronome.dimensions', []), $allowed_dimensions);
         $this->buckets = match ($type) {
-            MetricType::Histogram => $buckets ?: config('devices.observability.buckets', []),
+            MetricType::Histogram => $buckets ?: config('metronome.buckets', Bucket::Default->scale()),
             default => []
         };
         $this->quantiles = match ($type) {
-            MetricType::Summary => $quantiles ?: config('devices.observability.quantiles', []),
+            MetricType::Summary => $quantiles ?: config('metronome.quantiles', Quantile::scale()),
             default => []
         };
     }

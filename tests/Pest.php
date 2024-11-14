@@ -4,6 +4,9 @@ use Ninja\Metronome\Enums\Bucket;
 use Ninja\Metronome\Enums\Quantile;
 use Ninja\Metronome\MetronomeServiceProvider;
 use Orchestra\Testbench\TestCase;
+use Tests\Unit\Mocks\SwooleTableMock;
+
+class_alias(SwooleTableMock::class, 'Swoole\Table');
 
 uses()->group('unit')->in('Unit');
 uses()->group('feature')->in('Feature');

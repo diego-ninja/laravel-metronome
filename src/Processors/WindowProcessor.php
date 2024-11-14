@@ -18,7 +18,7 @@ use Ninja\Metronome\StateManager;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 use Throwable;
 
-final class WindowProcessor implements Processor
+class WindowProcessor implements Processor
 {
     private Collection $keys;
 

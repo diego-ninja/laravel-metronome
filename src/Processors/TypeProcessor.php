@@ -13,13 +13,13 @@ use Ninja\Metronome\Processors\Items\Metric;
 use Ninja\Metronome\Processors\Items\Type;
 use Throwable;
 
-final readonly class TypeProcessor implements Processor
+class TypeProcessor implements Processor
 {
     private Collection $keys;
 
     public function __construct(
-        private MetricProcessor $metricProcessor,
-        private MetricStorage $storage
+        private readonly MetricProcessor $metricProcessor,
+        private readonly MetricStorage $storage
     ) {
         $this->keys = collect();
     }

@@ -2,7 +2,7 @@
 
 namespace Ninja\Metronome\Processors\Contracts;
 
-use Ninja\DeviceTracker\DTO\Metadata;
+use Ninja\Metronome\Dto\Metadata;
 
 interface Processable
 {

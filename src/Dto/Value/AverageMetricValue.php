@@ -12,7 +12,7 @@ final class AverageMetricValue extends AbstractMetricValue
         int $count = 1
     ) {
         parent::__construct($value, [
-            'sum' => $sum,
+            'sum' => $sum == 0.0 ? $sum + $value : $sum,
             'count' => $count,
         ]);
     }

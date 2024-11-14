@@ -2,7 +2,7 @@
 
 namespace Ninja\Metronome\Processors\Items;
 
-use Ninja\DeviceTracker\DTO\Metadata;
+use Ninja\Metronome\Dto\Metadata;
 use Ninja\Metronome\Processors\Contracts\Processable;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 

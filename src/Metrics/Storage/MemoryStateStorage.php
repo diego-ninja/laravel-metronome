@@ -23,7 +23,7 @@ final class MemoryStateStorage implements StateStorage
 
     private array $errors = [];
 
-    private bool $pipelinig = false;
+    private bool $pipelining = false;
 
     public function __construct(?string $prefix = null)
     {
@@ -46,7 +46,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function get(string $key): ?string
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['get', [$key]];
 
             return null;
@@ -57,8 +57,9 @@ final class MemoryStateStorage implements StateStorage
 
     private function _get(string $key): ?string
     {
-        $data = $this->storage->get($this->prefix($key));
-        if (! $data || ($data['expire_at'] > 0 && $data['expire_at'] < time())) {
+        $data = $this->counter($key) ? $this->counterStorage->get($this->prefix($key)) : $this->storage->get($this->prefix($key));
+
+        if (! $data || ($data['expire_at'] > 0 && $data['expire_at'] < now()->timestamp)) {
             return null;
         }
 
@@ -67,7 +68,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function set(string $key, string $value, ?int $ttl = null): void
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['set', [$key, $value, $ttl]];
 
             return;
@@ -78,7 +79,7 @@ final class MemoryStateStorage implements StateStorage
 
     private function _set(string $key, string $value, ?int $ttl = null): void
     {
-        $expireAt = $ttl ? time() + $ttl : 0;
+        $expireAt = $ttl ? now()->timestamp + $ttl : 0;
 
         $this->storage->set($this->prefix($key), [
             'value' => $value,
@@ -88,7 +89,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function increment(string $key): int
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['increment', [$key]];
 
             return 0;
@@ -102,7 +103,7 @@ final class MemoryStateStorage implements StateStorage
         $key = $this->prefix($key);
 
         $current = $this->counterStorage->get($key);
-        $value = $current ? $current['value'] + 1 : 1;
+        $value = ($current ? (int) $current['value'] : 0) + 1;
 
         $this->counterStorage->set($key, ['value' => $value]);
 
@@ -111,7 +112,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function delete(string $key): void
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['delete', [$key]];
 
             return;
@@ -131,18 +132,20 @@ final class MemoryStateStorage implements StateStorage
 
     public function pipeline(callable $callback): array
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             throw new RuntimeException('Nested pipelines are not supported');
         }
 
-        $this->start();
+        $this->pipelining = true;
+        $this->operations = [];
 
         try {
             $callback($this);
 
             return $this->execute();
         } finally {
-            $this->finish();
+            $this->pipelining = false;
+            $this->operations = [];
         }
     }
 
@@ -158,7 +161,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function hSet(string $key, string $field, string $value): void
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['hSet', [$key, $field, $value]];
 
             return;
@@ -172,13 +175,13 @@ final class MemoryStateStorage implements StateStorage
         $hashKey = $this->prefix(sprintf('%s:%s', $key, $field));
         $this->hashStorage->set($hashKey, [
             'value' => $value,
-            'timestamp' => time(),
+            'timestamp' => now()->timestamp,
         ]);
     }
 
     public function hGet(string $key, string $field): ?string
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['hGet', [$key, $field]];
 
             return null;
@@ -197,7 +200,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function hExists(string $key, string $field): bool
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['hExists', [$key, $field]];
 
             return false;
@@ -215,7 +218,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function hGetAll(string $key): array
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['hGetAll', [$key]];
 
             return [];
@@ -227,12 +230,11 @@ final class MemoryStateStorage implements StateStorage
     private function _hGetAll(string $key): array
     {
         $result = [];
-        $prefix = $key.':';
-        $prefixLength = strlen($prefix);
+        $prefix = $this->prefix($key).':';
 
         foreach ($this->hashStorage as $hashKey => $data) {
             if (str_starts_with($hashKey, $prefix)) {
-                $field = substr($hashKey, $prefixLength);
+                $field = $this->strip($hashKey);
                 $result[$field] = $data['value'];
             }
         }
@@ -242,7 +244,7 @@ final class MemoryStateStorage implements StateStorage
 
     public function hDel(string $key, string $field): void
     {
-        if ($this->pipelinig) {
+        if ($this->pipelining) {
             $this->operations[] = ['hDel', [$key, $field]];
 
             return;
@@ -260,13 +262,18 @@ final class MemoryStateStorage implements StateStorage
     public function clean(): int
     {
         $count = 0;
-        $now = time();
+        $now = now()->timestamp;
+        $keysToDelete = [];
 
         foreach ($this->storage as $key => $data) {
-            if ($data['expire_at'] > 0 && $data['expire_at'] < $now) {
-                $this->storage->del($key);
+            if (isset($data['expire_at']) && $data['expire_at'] > 0 && $data['expire_at'] < $now) {
+                $keysToDelete[] = $key;
                 $count++;
             }
+        }
+
+        foreach ($keysToDelete as $key) {
+            $this->storage->del($key);
         }
 
         return $count;
@@ -274,12 +281,13 @@ final class MemoryStateStorage implements StateStorage
 
     public function state(Aggregation $window): array
     {
-        $prefix = sprintf('window:%s:', $window->value);
+        $pattern = $this->prefix(sprintf('window:%s:', $window->value));
         $result = [];
 
         foreach ($this->storage as $key => $data) {
-            if (str_starts_with($key, $prefix)) {
-                $result[substr($key, strlen($prefix))] = $data['value'];
+            if (str_starts_with($key, $pattern)) {
+                $windowKey = str_replace($pattern, '', $key);
+                $result[$windowKey] = $data['value'];
             }
         }
 
@@ -323,9 +331,7 @@ final class MemoryStateStorage implements StateStorage
                 'error' => $e->getMessage(),
             ];
 
-            if (! config('devices.observability.storage.continue_on_error', true)) {
-                throw $e;
-            }
+            throw $e;
         } finally {
             $this->operations = [];
         }
@@ -344,35 +350,35 @@ final class MemoryStateStorage implements StateStorage
     private function operation(string $method, array $args): mixed
     {
         return match ($method) {
-            'get' => $this->get(...$args),
-            'set' => $this->set(...$args) ?? null,
-            'increment' => $this->increment(...$args),
-            'delete' => $this->delete(...$args) ?? null,
-            'hSet' => $this->hSet(...$args) ?? null,
-            'hGet' => $this->hGet(...$args),
-            'hExists' => $this->hExists(...$args),
-            'hGetAll' => $this->hGetAll(...$args),
-            'hDel' => $this->hDel(...$args) ?? null,
+            'get' => $this->_get(...$args),
+            'set' => $this->_set(...$args) ?? null,
+            'increment' => $this->_increment(...$args),
+            'delete' => $this->_delete(...$args) ?? null,
+            'hSet' => $this->_hSet(...$args) ?? null,
+            'hGet' => $this->_hGet(...$args),
+            'hExists' => $this->_hExists(...$args),
+            'hGetAll' => $this->_hGetAll(...$args),
+            'hDel' => $this->_hDel(...$args) ?? null,
             default => null,
         };
     }
 
     private function start(): void
     {
-        $this->pipelinig = true;
+        $this->pipelining = true;
         $this->operations = [];
         $this->errors = [];
     }
 
     private function finish(): void
     {
-        $this->pipelinig = false;
+        $this->pipelining = false;
         $this->operations = [];
     }
 
     public function reset(): void
     {
-        $this->pipelinig = false;
+        $this->pipelining = false;
         $this->operations = [];
         $this->errors = [];
     }
@@ -390,9 +396,16 @@ final class MemoryStateStorage implements StateStorage
     {
         $prefix = sprintf('%s:state:', $this->prefix);
         if (str_starts_with($key, $prefix)) {
-            return substr($key, strlen($prefix));
+            $parts = explode(':', $key);
+
+            return end($parts);
         }
 
         return $key;
+    }
+
+    private function counter(string $key): bool
+    {
+        return $this->counterStorage->exist($this->prefix($key));
     }
 }

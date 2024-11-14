@@ -100,7 +100,7 @@ class StateManager
         );
     }
 
-    private function key(string $type, string $window): string
+    public function key(string $type, string $window): string
     {
         return sprintf('%s:%s:%s', $this->prefix, $type, $window);
     }

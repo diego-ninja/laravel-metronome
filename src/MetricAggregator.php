@@ -171,7 +171,7 @@ final readonly class MetricAggregator
             throw new InvalidMetricException(sprintf('Metric %s not found in registry', $name));
         }
 
-        $interval = $interval ?? config('devices.observability.rate_interval', 60);
+        $interval = $interval ?? config('metronome.rate_interval', 60);
 
         $this->record(
             name: $name,

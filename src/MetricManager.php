@@ -130,9 +130,11 @@ final readonly class MetricManager
 
     private function windows(): Collection
     {
-        return collect(config('devices.observability.aggregation.windows', [
+        return collect(config('metronome.aggregation.windows', [
             Aggregation::Realtime,
             Aggregation::Hourly,
+            Aggregation::Daily,
+            Aggregation::Monthly,
         ]));
     }
 

@@ -11,11 +11,11 @@ use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 use Ninja\Metronome\Repository\Dto\Metric as MetricDto;
 use Throwable;
 
-final readonly class MetricProcessor implements Processor
+class MetricProcessor implements Processor
 {
     public function __construct(
-        private MetricStorage $storage,
-        private MetricAggregationRepository $repository
+        private readonly MetricStorage $storage,
+        private readonly MetricAggregationRepository $repository
     ) {}
 
     /**
@@ -26,11 +26,16 @@ final readonly class MetricProcessor implements Processor
         if (! $item instanceof Metric) {
             throw new InvalidArgumentException('Invalid processable type');
         }
+        $value = $this->storage->value($item->key());
+
+        if ($value->value() === 0.0) {
+            return;
+        }
 
         $metric = new MetricDto(
             name: $item->key()->name,
             type: $item->key()->type,
-            value: $this->storage->value($item->key()),
+            value: $value,
             timestamp: $item->window()->from,
             dimensions: $item->key()->dimensions,
             aggregation: $item->window()->aggregation
