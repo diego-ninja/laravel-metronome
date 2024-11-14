@@ -120,25 +120,31 @@ it('executes batch operations', function () {
 });
 
 it('gets state for aggregation window', function () {
+    $keys = [
+        'test_prefix:state:window:realtime:key1',
+        'test_prefix:state:window:realtime:key2',
+    ];
+
     $this->redis->shouldReceive('keys')
         ->with('test_prefix:state:window:realtime:*')
-        ->andReturn([
-            'test_prefix:state:window:realtime:key1',
-            'test_prefix:state:window:realtime:key2',
-        ]);
+        ->andReturn($keys);
 
-    $this->redis->shouldReceive('get')
-        ->with('test_prefix:state:window:realtime:key1')
-        ->andReturn('value1');
-    $this->redis->shouldReceive('get')
-        ->with('test_prefix:state:window:realtime:key2')
-        ->andReturn('value2');
+    foreach ($keys as $key) {
+        $this->redis->shouldReceive('get')
+            ->with($key)
+            ->once()
+            ->andReturn($key === $keys[0] ? 'value1' : 'value2');
+    }
 
     $state = $this->storage->state(Aggregation::Realtime);
-    expect($state)->toEqual([
-        'key1' => 'value1',
-        'key2' => 'value2',
-    ]);
+
+    expect($state)
+        ->toBeArray()
+        ->toHaveCount(2)
+        ->and($state)->toBe([
+            'key1' => 'value1',
+            'key2' => 'value2',
+        ]);
 });
 
 it('reports health status', function () {

@@ -28,6 +28,17 @@ This is a work in progress, an alpha code and absolutely is not ready for produc
 * Automatic event metrics
 * Prometheus integration
 
+## 🗓️ Planned features
+
+* Laravel Pulse integration
+* Metric alerts
+* Reactive metric propagation
+  * Prometheus
+  * CloudWatch
+  * InfluxDB
+  * Posthog
+
+
 ## 📚 Documentation
 
 Please refer to the [documentation](./docs/README.md) for more information on the features and how to use this package.

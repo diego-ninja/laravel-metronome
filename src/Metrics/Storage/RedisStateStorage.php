@@ -82,13 +82,15 @@ final readonly class RedisStateStorage implements StateStorage
     {
         $pattern = $this->prefix(sprintf('window:%s:*', $window->value));
         $keys = $this->redis->keys($pattern);
-
         $state = [];
 
-        foreach ($keys as $key => $data) {
-            $$key = $this->strip($key);
-            $windowKey = str_replace(sprintf('window:%s:', $window->value), '', $key);
-            $state[$windowKey] = $this->redis->get($key);
+        foreach ($keys as $key) {
+            $strippedKey = $this->strip($key);
+            $windowKey = str_replace(sprintf('window:%s:', $window->value), '', $strippedKey);
+            $value = $this->redis->get($key);
+            if ($value !== null) {
+                $state[$windowKey] = $value;
+            }
         }
 
         return $state;
@@ -202,8 +204,9 @@ final readonly class RedisStateStorage implements StateStorage
 
     private function strip(string $key): string
     {
-        if (str_starts_with($key, $this->prefix.'%s:state')) {
-            return substr($key, strlen($this->prefix) + 1);
+        $prefix = $this->prefix.':state:';
+        if (str_starts_with($key, $prefix)) {
+            return substr($key, strlen($prefix));
         }
 
         return $key;
