@@ -59,4 +59,9 @@ class Metric extends Model
             set: fn (Metadata $value) => $value->json()
         );
     }
+
+    public static function withFingerprint(string $fingerprint): self
+    {
+        return self::query()->where('metric_fingerprint', $fingerprint)->firstOrFail();
+    }
 }

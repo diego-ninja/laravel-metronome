@@ -6,11 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public const TABLE = 'metronome_metrics';
+    public const TABLE = 'metronome';
+
+    private string $table;
+
+    public function __construct()
+    {
+        $this->table = config('metronome.table_name', self::TABLE);
+    }
 
     public function up(): void
     {
-        Schema::create(self::TABLE, function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('metric_fingerprint', 64);
             $table->string('name');
@@ -36,6 +43,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(self::TABLE);
+        Schema::dropIfExists($this->table);
     }
 };

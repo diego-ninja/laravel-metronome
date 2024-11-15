@@ -14,6 +14,18 @@ abstract class AbstractMetricValue implements \JsonSerializable, MetricValue
         $this->validate();
     }
 
+    public static function from(string|array $data): self
+    {
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+        }
+
+        return new static(
+            value: $data['value'],
+            metadata: $data['metadata'] ?? []
+        );
+    }
+
     public function value(): float
     {
         return $this->value;

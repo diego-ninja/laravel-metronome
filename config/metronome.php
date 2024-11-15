@@ -17,6 +17,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Table Name
+    |--------------------------------------------------------------------------
+    | This option allows you to specify the table name for Metronome metrics.
+    |
+    */
+    'table_name' => 'metronome_metrics',
+
+    /*
+    |--------------------------------------------------------------------------
     | Metric Prefix
     |--------------------------------------------------------------------------
     | This option allows you to specify a prefix for all metrics stored by
@@ -38,10 +47,16 @@ return [
     */
     'storage' => [
         'metrics' => [
-            'driver' => 'redis',
-            'connection' => 'metrics',
-            'memory' => [
-                'max_size' => 10000,
+            'ephemeral' => [
+                'driver' => 'redis',
+                'connection' => 'metrics',
+                'memory' => [
+                    'max_size' => 10000,
+                ],
+            ],
+            'persistent' => [
+                'driver' => 'database',
+                'connection' => 'mysql',
             ],
         ],
         'state' => [

@@ -6,6 +6,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use InvalidArgumentException;
 use Mockery;
+use Ninja\Metronome\Dto\Dimension;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Dto\Value\CounterMetricValue;
 use Ninja\Metronome\Enums\Aggregation;
@@ -40,7 +41,7 @@ describe('basic filters', function () {
             ->with('window', Aggregation::Realtime->value)
             ->andReturnSelf();
 
-        $this->queryBuilder->withWindow(Aggregation::Realtime);
+        $this->queryBuilder->forAggregation(Aggregation::Realtime);
     });
 
     it('builds multiple type filter', function () {
@@ -61,13 +62,13 @@ describe('dimensions', function () {
             ->with('dimensions', 'like', '%"host":"test-host"%')
             ->andReturnSelf();
 
-        $this->queryBuilder->withDimension('host', 'test-host');
+        $this->queryBuilder->withDimension(new Dimension('host', 'test-host'));
     });
 
     it('builds multiple dimensions filter', function () {
         $dimensions = new DimensionCollection([
-            ['name' => 'host', 'value' => 'test-host'],
-            ['name' => 'env', 'value' => 'prod'],
+            new Dimension('host', 'test-host'),
+            new Dimension('env', 'prod'),
         ]);
 
         $this->builder->shouldReceive('where')
@@ -169,26 +170,24 @@ describe('metric grouping', function () {
 
         $this->builder->shouldReceive('raw')
             ->with($expr)
+            ->once()
             ->andReturn(new Expression($expr));
 
         $this->builder->shouldReceive('groupBy')
             ->with(Mockery::type(Expression::class))
+            ->once()
             ->andReturnSelf();
 
         $this->queryBuilder->groupByDimension('host');
     });
 
-    it('groups by time window', function () {
-        $this->builder->shouldReceive('groupBy')
-            ->with(Mockery::type(Expression::class))
+    it('groups by aggregation', function () {
+        $this->builder->shouldReceive('groupByRaw')
+            ->with(MetricQueryBuilder::VALID_TIME_WINDOWS[Aggregation::Hourly->value])
+            ->once()
             ->andReturnSelf();
 
-        $this->queryBuilder->groupByTimeWindow('1 hour');
-    });
-
-    it('validates time window interval', function () {
-        expect(fn () => $this->queryBuilder->groupByTimeWindow('invalid'))
-            ->toThrow(InvalidArgumentException::class);
+        $this->queryBuilder->groupByAggregation(Aggregation::Hourly);
     });
 });
 
@@ -204,7 +203,7 @@ describe('joins', function () {
     it('joins metrics with basic join', function () {
         $this->builder->shouldReceive('innerJoin')
             ->once()
-            ->withArgs(function ($table, $closure) {
+            ->withArgs(function ($table) {
                 return $table === 'metronome_metrics AS m2';
             })
             ->andReturnSelf();
@@ -226,22 +225,22 @@ describe('joins', function () {
 
 describe('advanced filters', function () {
     it('filters by percentile', function () {
-        $this->builder->shouldReceive('count')->andReturn(100);
-        $this->builder->shouldReceive('newQuery')->andReturnSelf();
-        $this->builder->shouldReceive('select')->andReturnSelf();
-        $this->builder->shouldReceive('orderBy')->andReturnSelf();
-        $this->builder->shouldReceive('limit')->andReturnSelf();
-        $this->builder->shouldReceive('offset')->andReturnSelf();
-        $this->builder->shouldReceive('where')->andReturnSelf();
+        $this->builder->shouldReceive('count')->once()->andReturn(100);
+        $this->builder->shouldReceive('newQuery')->once()->andReturnSelf();
+        $this->builder->shouldReceive('select')->once()->andReturnSelf();
+        $this->builder->shouldReceive('orderBy')->once()->andReturnSelf();
+        $this->builder->shouldReceive('limit')->once()->andReturnSelf();
+        $this->builder->shouldReceive('offset')->once()->andReturnSelf();
+        $this->builder->shouldReceive('where')->once()->andReturnSelf();
 
         $this->queryBuilder->wherePercentile(95);
     });
 
     it('filters with correlated metrics', function () {
-        $this->builder->shouldReceive('innerJoin')->andReturnSelf();
-        $this->builder->shouldReceive('select')->andReturnSelf();
-        $this->builder->shouldReceive('having')->andReturnSelf();
-        $this->builder->shouldReceive('groupBy')->andReturnSelf();
+        $this->builder->shouldReceive('innerJoin')->once()->andReturnSelf();
+        $this->builder->shouldReceive('select')->once()->andReturnSelf();
+        $this->builder->shouldReceive('having')->once()->andReturnSelf();
+        $this->builder->shouldReceive('groupBy')->once()->andReturnSelf();
 
         $this->queryBuilder->withCorrelatedMetrics('other_metric', 0.7);
     });
@@ -256,46 +255,5 @@ describe('advanced filters', function () {
             ->andReturnSelf();
 
         $this->queryBuilder->withChangeRate();
-    });
-});
-
-describe('calculations', function () {
-    it('calculates percentiles', function () {
-        $this->builder->shouldReceive('selectRaw')
-            ->andReturnSelf();
-
-        $this->builder->shouldReceive('value')
-            ->andReturn('50.5');
-
-        $percentiles = $this->queryBuilder->calculatePercentiles();
-
-        expect($percentiles)
-            ->toHaveKeys(['p25', 'p50', 'p75', 'p90', 'p95', 'p99']);
-    });
-
-    it('calculates histogram', function () {
-        $this->builder->shouldReceive('selectRaw')
-            ->andReturnSelf();
-
-        $this->builder->shouldReceive('first')
-            ->andReturn((object) [
-                'min' => 0,
-                'max' => 100,
-            ]);
-
-        $this->builder->shouldReceive('whereBetween')
-            ->times(10)
-            ->andReturnSelf();
-
-        $this->builder->shouldReceive('count')
-            ->times(10)
-            ->andReturn(10);
-
-        $histogram = $this->queryBuilder->calculateHistogram();
-
-        expect($histogram)
-            ->toBeArray()
-            ->toHaveCount(10)
-            ->each->toHaveKeys(['range', 'count']);
     });
 });

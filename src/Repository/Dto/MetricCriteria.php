@@ -8,7 +8,7 @@ use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\ValueObjects\TimeRange;
 
-class MetricCriteria implements JsonSerializable
+readonly class MetricCriteria implements JsonSerializable
 {
     /**
      * @param  string[]|null  $names
@@ -35,31 +35,6 @@ class MetricCriteria implements JsonSerializable
             timeRange: $data['timeRange'] ?? null,
             dimensions: $data['dimensions'] ?? null,
         );
-    }
-
-    public function addName(string $name): void
-    {
-        $this->names[] = $name;
-    }
-
-    public function addType(MetricType $type): void
-    {
-        $this->types[] = $type;
-    }
-
-    public function addAggregation(Aggregation $aggregation)
-    {
-        $this->aggregations[] = $aggregation;
-    }
-
-    public function withTimeRange(TimeRange $timeRange): self
-    {
-        $this->timeRange = $timeRange;
-    }
-
-    public function addDimension(Dimension $dimension)
-    {
-        $this->dimensions[] = $dimension;
     }
 
     public function array(): array

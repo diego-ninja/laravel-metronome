@@ -23,7 +23,7 @@ function defineEnvironment($app): void
 {
     $app['config']->set('metronome.enabled', true);
     $app['config']->set('metronome.prefix', 'metronome_test');
-    $app['config']->set('metronome.storage.metrics.driver', 'redis');
+    $app['config']->set('metronome.storage.metrics.ephemeral.driver', 'redis');
     $app['config']->set('metronome.storage.state.driver', 'redis');
     $app['config']->set('metronome.rate_interval', 3600);
     $app['config']->set('metronome.buckets', Bucket::Default->scale());

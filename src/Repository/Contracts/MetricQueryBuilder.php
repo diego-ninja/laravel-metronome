@@ -4,15 +4,19 @@ namespace Ninja\Metronome\Repository\Contracts;
 
 use Closure;
 use Illuminate\Support\Collection;
+use Ninja\Metronome\Dto\Dimension;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Repository\Dto\Metric;
+use Ninja\Metronome\Repository\Dto\MetricCriteria;
 use Ninja\Metronome\ValueObjects\TimeRange;
 
 interface MetricQueryBuilder
 {
-    public function withDimension(string $name, string $value): self;
+    public function withCriteria(MetricCriteria $criteria): self;
+
+    public function withDimension(Dimension $dimension): self;
 
     public function withDimensions(DimensionCollection $dimensions): self;
 
@@ -20,7 +24,7 @@ interface MetricQueryBuilder
 
     public function withTypes(array $types): self;
 
-    public function withWindow(Aggregation $window): self;
+    public function forAggregation(Aggregation $window): self;
 
     public function withTimeRange(TimeRange $timeRange): self;
 
@@ -28,19 +32,19 @@ interface MetricQueryBuilder
 
     public function orderBy(string $column, string $direction = 'asc'): self;
 
-    public function orderByValue(string $direction = 'asc'): self;
+    public function orderByComputed(string $direction = 'asc'): self;
 
     public function orderByTimestamp(string $direction = 'asc'): self;
 
     public function limit(int $limit): self;
 
-    public function havingValue(string $operator, float $value): self;
+    public function havingComputed(string $operator, float $value): self;
 
     public function groupByDimension(string $dimension): self;
 
     public function groupByDimensions(array $dimensions): self;
 
-    public function groupByTimeWindow(string $interval = '1 hour'): self;
+    public function groupByAggregation(Aggregation $aggregation): self;
 
     public function whereInSubquery(string $column, Closure $callback): self;
 
@@ -58,8 +62,6 @@ interface MetricQueryBuilder
     public function withChangeRate(): self;
 
     public function aggregate(string $function, array $columns): self;
-
-    public function stats(): array;
 
     /**
      * @return Collection<Metric>

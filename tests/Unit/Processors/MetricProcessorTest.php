@@ -21,7 +21,7 @@ use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
 use Ninja\Metronome\Processors\Contracts\Processable;
 use Ninja\Metronome\Processors\Items\Metric;
 use Ninja\Metronome\Processors\MetricProcessor;
-use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 
 beforeEach(function () {

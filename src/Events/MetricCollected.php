@@ -8,7 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Ninja\Metronome\Contracts\MetricValue;
 use Ninja\Metronome\Metrics\Definition\AbstractMetricDefinition;
 
-final readonly class MetricCollected
+final class MetricCollected
 {
     use Dispatchable;
     use InteractsWithSockets;

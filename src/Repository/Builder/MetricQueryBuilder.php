@@ -5,25 +5,26 @@ namespace Ninja\Metronome\Repository\Builder;
 use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 use Ninja\Metronome\Dto\Dimension;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Repository\Contracts\MetricQueryBuilder as QueryBuilder;
 use Ninja\Metronome\Repository\Dto\Metric;
+use Ninja\Metronome\Repository\Dto\MetricCriteria;
 use Ninja\Metronome\ValueObjects\TimeRange;
 
 class MetricQueryBuilder implements QueryBuilder
 {
     private const METRIC_TABLE = 'metronome_metrics';
 
-    private const VALID_TIME_WINDOWS = [
-        '1 minute' => "DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00')",
-        '1 hour' => "DATE_FORMAT(timestamp, '%Y-%m-%d %H:00:00')",
-        '1 day' => 'DATE(timestamp)',
-        '1 week' => 'DATE(DATE_SUB(timestamp, INTERVAL WEEKDAY(timestamp) DAY))',
-        '1 month' => "DATE_FORMAT(timestamp, '%Y-%m-01')",
+    public const VALID_TIME_WINDOWS = [
+        Aggregation::Realtime->value => "DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00')",
+        Aggregation::Hourly->value => "DATE_FORMAT(timestamp, '%Y-%m-%d %H:00:00')",
+        Aggregation::Daily->value => 'DATE(timestamp)',
+        Aggregation::Weekly->value => 'DATE(DATE_SUB(timestamp, INTERVAL WEEKDAY(timestamp) DAY))',
+        Aggregation::Monthly->value => "DATE_FORMAT(timestamp, '%Y-%m-01')",
+        Aggregation::Yearly->value => "DATE_FORMAT(timestamp, '%Y-01-01')",
     ];
 
     protected Builder $query;
@@ -33,9 +34,36 @@ class MetricQueryBuilder implements QueryBuilder
         $this->query = $baseQuery;
     }
 
-    public function withDimension(string $name, string $value): self
+    public function withCriteria(MetricCriteria $criteria): self
     {
-        $this->query->where('dimensions', 'like', "%{$name}:{$value}%");
+        if ($criteria->names) {
+            $this->query->whereIn('name', $criteria->names);
+        }
+
+        if ($criteria->types) {
+            $this->query->whereIn('type', array_map(fn ($type) => $type->value, $criteria->types));
+        }
+
+        if ($criteria->aggregations) {
+            $this->query->whereIn('window', array_map(fn ($aggregation) => $aggregation->value, $criteria->aggregations));
+        }
+
+        if ($criteria->timeRange) {
+            $this->query->whereBetween('timestamp', [$criteria->timeRange->from, $criteria->timeRange->to]);
+        }
+
+        if ($criteria->dimensions) {
+            foreach ($criteria->dimensions as $dimension) {
+                $this->query->where('dimensions', 'like', "%{$dimension->name}:{$dimension->value}%");
+            }
+        }
+
+        return $this;
+    }
+
+    public function withDimension(Dimension $dimension): self
+    {
+        $this->query->where('dimensions', 'like', sprintf('%%"%s":"%s"%%', $dimension->name, $dimension->value));
 
         return $this;
     }
@@ -44,7 +72,7 @@ class MetricQueryBuilder implements QueryBuilder
     {
         foreach ($dimensions as $dimension) {
             /** @var Dimension $dimension */
-            $this->withDimension($dimension->name, $dimension->value);
+            $this->withDimension($dimension);
         }
 
         return $this;
@@ -64,7 +92,7 @@ class MetricQueryBuilder implements QueryBuilder
         return $this;
     }
 
-    public function withWindow(Aggregation $window): self
+    public function forAggregation(Aggregation $window): self
     {
         $this->query->where('window', $window->value);
 
@@ -92,7 +120,7 @@ class MetricQueryBuilder implements QueryBuilder
         return $this;
     }
 
-    public function orderByValue(string $direction = 'asc'): self
+    public function orderByComputed(string $direction = 'asc'): self
     {
         return $this->orderBy('computed', $direction);
     }
@@ -109,7 +137,7 @@ class MetricQueryBuilder implements QueryBuilder
         return $this;
     }
 
-    public function havingValue(string $operator, float $value): self
+    public function havingComputed(string $operator, float $value): self
     {
         $this->query->having('computed', $operator, $value);
 
@@ -133,12 +161,9 @@ class MetricQueryBuilder implements QueryBuilder
         return $this;
     }
 
-    public function groupByTimeWindow(string $interval = '1 hour'): self
+    public function groupByAggregation(Aggregation $aggregation): self
     {
-        if (! isset(self::VALID_TIME_WINDOWS[$interval])) {
-            throw new InvalidArgumentException('Invalid interval');
-        }
-        $this->query->groupBy($this->query->raw(self::VALID_TIME_WINDOWS[$interval]));
+        $this->query->groupByRaw(self::VALID_TIME_WINDOWS[$aggregation->value]);
 
         return $this;
     }
@@ -278,7 +303,7 @@ class MetricQueryBuilder implements QueryBuilder
         ];
     }
 
-    public function calculatePercentiles(): array
+    private function calculatePercentiles(): array
     {
         $percentiles = [25, 50, 75, 90, 95, 99];
         $results = [];
@@ -292,7 +317,7 @@ class MetricQueryBuilder implements QueryBuilder
         return $results;
     }
 
-    public function calculateHistogram(int $bins = 10): array
+    private function calculateHistogram(int $bins = 10): array
     {
         $stats = $this->query->selectRaw('MIN(computed) as min, MAX(computed) as max')->first();
         $width = ($stats->max - $stats->min) / $bins;

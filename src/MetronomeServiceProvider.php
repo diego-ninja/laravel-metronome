@@ -37,7 +37,7 @@ final class MetronomeServiceProvider extends ServiceProvider
         $this->app->singleton(MetricStorage::class, function () {
             return new RedisMetricStorage(
                 prefix: config('metronome.prefix'),
-                connection: config('metronome.storage.metrics.connection')
+                connection: config('metronome.storage.metrics.ephemeral.connection')
             );
         });
 

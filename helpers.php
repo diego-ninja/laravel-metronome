@@ -1,7 +1,7 @@
 <?php
 
 use Ninja\Metronome\MetricAggregator;
-use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\Repository\Dto\Metric;
 
 if (! function_exists('metronome')) {
     function metronome(): MetricAggregator
