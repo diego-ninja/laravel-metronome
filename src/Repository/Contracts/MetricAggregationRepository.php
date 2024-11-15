@@ -1,9 +1,9 @@
 <?php
 
-namespace Ninja\Metronome\Repository\Builder\Contracts;
+namespace Ninja\Metronome\Repository\Contracts;
 
 use Ninja\Metronome\Enums\Aggregation;
-use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\Repository\Dto\Metric;
 
 interface MetricAggregationRepository
 {

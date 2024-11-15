@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
-use Ninja\Metronome\Repository\Builder\Builder\MetricQueryBuilder;
 use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
-use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\Repository\Builder\MetricQueryBuilder;
+use Ninja\Metronome\Repository\Dto\Metric;
 use Ninja\Metronome\ValueObjects\TimeRange;
 
 class DatabaseMetricAggregationRepository implements MetricAggregationRepository

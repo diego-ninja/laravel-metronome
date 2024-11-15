@@ -1,6 +1,6 @@
 <?php
 
-namespace Ninja\Metronome\Repository\Builder\Dto;
+namespace Ninja\Metronome\Repository\Dto;
 
 use JsonSerializable;
 use Ninja\Metronome\Dto\Dimension;
