@@ -5,8 +5,8 @@ namespace Ninja\Metronome\Metrics\Exporter;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Metrics\Exporter\Metric\Factory;
-use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
-use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Dto\Metric;
 
 final readonly class AggregatedMetricExporter extends AbstractMetricExporter
 {

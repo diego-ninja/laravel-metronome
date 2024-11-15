@@ -6,7 +6,7 @@ use Illuminate\Console\OutputStyle;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\Storage;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
-use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
 
 final readonly class PruneMetricsTask
 {

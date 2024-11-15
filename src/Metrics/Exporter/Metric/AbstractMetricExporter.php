@@ -7,7 +7,7 @@ use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Enums\MetricType;
 use Ninja\Metronome\Metrics\Exporter\Contracts\Exportable;
 use Ninja\Metronome\Metrics\Registry;
-use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\Repository\Dto\Metric;
 
 abstract readonly class AbstractMetricExporter implements Exportable
 {

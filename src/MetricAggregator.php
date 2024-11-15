@@ -20,7 +20,7 @@ use Ninja\Metronome\Events\MetricCollected;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Registry;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
-use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\Repository\Dto\Metric;
 use Throwable;
 
 final readonly class MetricAggregator
