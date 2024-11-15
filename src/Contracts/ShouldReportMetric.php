@@ -2,7 +2,7 @@
 
 namespace Ninja\Metronome\Contracts;
 
-use Ninja\Metronome\Repository\Dto\Metric;
+use Ninja\Metronome\Repository\Builder\Dto\Metric;
 
 interface ShouldReportMetric
 {

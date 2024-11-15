@@ -19,8 +19,8 @@ use Ninja\Metronome\Metrics\Storage\RedisStateStorage;
 use Ninja\Metronome\Processors\MetricProcessor;
 use Ninja\Metronome\Processors\TypeProcessor;
 use Ninja\Metronome\Processors\WindowProcessor;
-use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
-use Ninja\Metronome\Repository\DatabaseMetricAggregationRepository;
+use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Builder\DatabaseMetricAggregationRepository;
 use Ninja\Metronome\Tasks\ProcessMetricsTask;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 

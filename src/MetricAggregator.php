@@ -16,10 +16,11 @@ use Ninja\Metronome\Dto\Value\RateMetricValue;
 use Ninja\Metronome\Dto\Value\SummaryMetricValue;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Events\MetricCollected;
 use Ninja\Metronome\Exceptions\InvalidMetricException;
 use Ninja\Metronome\Metrics\Registry;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
-use Ninja\Metronome\Repository\Dto\Metric;
+use Ninja\Metronome\Repository\Builder\Dto\Metric;
 use Throwable;
 
 final readonly class MetricAggregator
@@ -204,6 +205,8 @@ final readonly class MetricAggregator
                     ),
                     $value
                 );
+
+                event(new MetricCollected(Registry::get($name), $value));
             } catch (Throwable $e) {
                 Log::error('Failed to record metric', [
                     'name' => $name,

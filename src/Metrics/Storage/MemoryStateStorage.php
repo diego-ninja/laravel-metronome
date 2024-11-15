@@ -41,7 +41,7 @@ final class MemoryStateStorage implements StateStorage
         $this->counterStorage->column('value', Table::TYPE_INT);
         $this->counterStorage->create();
 
-        $this->prefix = $prefix ?: config('devices.observability.prefix');
+        $this->prefix = $prefix ?: config('metronome.prefix');
     }
 
     public function get(string $key): ?string

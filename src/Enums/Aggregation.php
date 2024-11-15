@@ -40,7 +40,7 @@ enum Aggregation: string
 
     public function retention(): DateInterval
     {
-        $config_key = sprintf('devices.observability.aggregation.retention.%s', $this->value);
+        $config_key = sprintf('metronome.aggregation.retention.%s', $this->value);
         if (config($config_key)) {
             return DateInterval::createFromDateString(config($config_key));
         }

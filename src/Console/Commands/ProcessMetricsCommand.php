@@ -5,7 +5,7 @@ namespace Ninja\Metronome\Console\Commands;
 use Illuminate\Console\Command;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Processors\WindowProcessor;
-use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
 use Ninja\Metronome\Tasks\ProcessMetricsTask;
 use Ninja\Metronome\ValueObjects\TimeWindow;
 use Throwable;
@@ -104,7 +104,7 @@ final class ProcessMetricsCommand extends Command
                 ['Last Processing', $this->processor->state()->last($window)?->diffForHumans() ?? 'Never'],
                 ['Error Count', $this->processor->state()->errors($window)],
                 ['Window Type', $window->value],
-                ['Retention Period', config(sprintf('devices.observability.aggregation.retention.%s', $window->value), '7 days')],
+                ['Retention Period', config(sprintf('metronome.aggregation.retention.%s', $window->value), '7 days')],
                 ['Pending Windows', $this->processor->pending($window)->count()],
             ]
         );

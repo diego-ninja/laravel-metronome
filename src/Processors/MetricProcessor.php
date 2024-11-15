@@ -7,8 +7,8 @@ use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
 use Ninja\Metronome\Processors\Contracts\Processable;
 use Ninja\Metronome\Processors\Contracts\Processor;
 use Ninja\Metronome\Processors\Items\Metric;
-use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
-use Ninja\Metronome\Repository\Dto\Metric as MetricDto;
+use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Builder\Dto\Metric as MetricDto;
 use Throwable;
 
 class MetricProcessor implements Processor

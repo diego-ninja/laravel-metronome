@@ -8,8 +8,8 @@ use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Dto\Value\CounterMetricValue;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
-use Ninja\Metronome\Repository\DatabaseMetricAggregationRepository;
-use Ninja\Metronome\Repository\Dto\Metric;
+use Ninja\Metronome\Repository\Builder\DatabaseMetricAggregationRepository;
+use Ninja\Metronome\Repository\Builder\Dto\Metric;
 
 beforeEach(function () {
     $this->builder = Mockery::mock(Builder::class);

@@ -3,131 +3,137 @@
 namespace Ninja\Metronome\Repository;
 
 use Carbon\Carbon;
-use DB;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
-use Ninja\Metronome\Contracts\MetricValue;
+use Illuminate\Support\Facades\DB;
 use Ninja\Metronome\Dto\DimensionCollection;
-use Ninja\Metronome\Dto\Value\AverageMetricValue;
-use Ninja\Metronome\Dto\Value\CounterMetricValue;
-use Ninja\Metronome\Dto\Value\GaugeMetricValue;
-use Ninja\Metronome\Dto\Value\HistogramMetricValue;
-use Ninja\Metronome\Dto\Value\PercentageMetricValue;
-use Ninja\Metronome\Dto\Value\RateMetricValue;
-use Ninja\Metronome\Dto\Value\SummaryMetricValue;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
-use Ninja\Metronome\Metrics\Handlers\HandlerFactory;
-use Ninja\Metronome\Repository\Contracts\MetricAggregationRepository;
-use Ninja\Metronome\Repository\Dto\Metric;
-use Throwable;
+use Ninja\Metronome\Repository\Builder\Builder\MetricQueryBuilder;
+use Ninja\Metronome\Repository\Builder\Contracts\MetricAggregationRepository;
+use Ninja\Metronome\Repository\Builder\Dto\Metric;
+use Ninja\Metronome\ValueObjects\TimeRange;
 
 class DatabaseMetricAggregationRepository implements MetricAggregationRepository
 {
-    public const METRIC_AGGREGATION_TABLE = 'metronome_metrics';
-
-    public function store(Metric $metric): void
-    {
-        try {
-            DB::table(self::METRIC_AGGREGATION_TABLE)->updateOrInsert(
-                [
-                    'metric_fingerprint' => $metric->fingerprint(),
-                ],
-                [
-                    'name' => $metric->name,
-                    'type' => $metric->type->value,
-                    'window' => $metric->aggregation->value,
-                    'dimensions' => $metric->dimensions->toJson(),
-                    'timestamp' => $metric->timestamp,
-                    'value' => $metric->value->serialize(),
-                    'computed' => $metric->value->value(),
-                    'metadata' => json_encode($metric->value->metadata()),
-                    'updated_at' => now(),
-                ]
-            );
-        } catch (Throwable $e) {
-            Log::error('Failed to store metric', [
-                'metric' => $metric->array(),
-                'error' => $e->getMessage(),
-            ]);
-
-            throw $e;
-        }
-    }
+    public const METRIC_AGGREGATION_TABLE = 'device_metrics';
 
     public function query(): MetricQueryBuilder
     {
         return new MetricQueryBuilder(DB::table(self::METRIC_AGGREGATION_TABLE));
     }
 
+    public function store(Metric $metric): void
+    {
+        DB::table(self::METRIC_AGGREGATION_TABLE)->updateOrInsert(
+            ['metric_fingerprint' => $metric->fingerprint()],
+            [
+                'name' => $metric->name,
+                'type' => $metric->type->value,
+                'window' => $metric->aggregation->value,
+                'dimensions' => $metric->dimensions->toJson(),
+                'timestamp' => $metric->timestamp,
+                'value' => $metric->value->serialize(),
+                'computed' => $metric->value->value(),
+                'metadata' => json_encode($metric->value->metadata()),
+                'updated_at' => now(),
+            ]
+        );
+    }
+
     public function findAggregatedByType(MetricType $type, Aggregation $aggregation): Collection
     {
-        return DB::table(self::METRIC_AGGREGATION_TABLE)
-            ->where('type', $type->value)
-            ->where('window', $aggregation->value)
-            ->where('timestamp', '>=', now()->sub($aggregation->retention()))
-            ->orderBy('timestamp')
-            ->get()
-            ->map(function (\stdClass $row) {
-                return new Metric(
-                    name: $row->name,
-                    type: MetricType::from($row->type),
-                    value: $this->buildValue(
-                        MetricType::from($row->type),
-                        $row->value,
-                        json_decode($row->metadata, true)
-                    ),
-                    timestamp: Carbon::parse($row->timestamp),
-                    dimensions: DimensionCollection::from(json_decode($row->dimensions, true)),
-                    aggregation: Aggregation::from($row->window),
-                );
-            });
+        return $this->query()
+            ->withType($type)
+            ->withWindow($aggregation)
+            ->withTimeRange(new TimeRange(
+                from: now()->sub($aggregation->retention()),
+                to: now()
+            ))
+            ->orderByTimestamp()
+            ->get();
     }
 
     public function hasMetrics(Aggregation $aggregation): bool
     {
-        return DB::table(self::METRIC_AGGREGATION_TABLE)
-            ->where('window', $aggregation->value)
-            ->where('timestamp', '>=', now()->sub($aggregation->retention()))
-            ->exists();
+        return $this->query()
+            ->withWindow($aggregation)
+            ->withTimeRange(new TimeRange(
+                from: now()->sub($aggregation->retention()),
+                to: now()
+            ))
+            ->count() > 0;
     }
 
     public function prune(Aggregation $window): int
     {
-        $before = now()->sub($window->retention());
-
-        return DB::table(self::METRIC_AGGREGATION_TABLE)
-            ->where('window', $window->value)
-            ->where('timestamp', '<', $before)
+        return $this->query()
+            ->withWindow($window)
+            ->withTimeRange(new TimeRange(
+                from: Carbon::createFromTimestamp(0),
+                to: now()->sub($window->retention())
+            ))
             ->delete();
+
     }
 
-    private function buildValue(MetricType $type, string $stored, ?array $metadata = null): MetricValue
+    // Ejemplos de métodos adicionales útiles usando el QueryBuilder
+
+    public function findByDimensions(string $name, DimensionCollection $dimensions): Collection
     {
-        try {
-            $value = json_decode($stored, true);
+        return $this->query()
+            ->withName($name)
+            ->withDimensions($dimensions)
+            ->orderByTimestamp()
+            ->get();
+    }
 
-            return HandlerFactory::compute($type, [
-                ['value' => (float) ($value['value'] ?? $stored), 'metadata' => $metadata],
-            ]);
-        } catch (Throwable $e) {
-            Log::error('Failed to reconstruct metric value', [
-                'type' => $type->value,
-                'stored' => $stored,
-                'metadata' => $metadata,
-                'error' => $e->getMessage(),
-            ]);
+    public function getMetricTrends(string $name, Aggregation $window): Collection
+    {
+        return $this->query()
+            ->withName($name)
+            ->withWindow($window)
+            ->withChangeRate()
+            ->orderByTimestamp()
+            ->get();
+    }
 
-            return match ($type) {
-                MetricType::Counter => CounterMetricValue::empty(),
-                MetricType::Gauge => GaugeMetricValue::empty(),
-                MetricType::Histogram => HistogramMetricValue::empty(),
-                MetricType::Summary => SummaryMetricValue::empty(),
-                MetricType::Average => AverageMetricValue::empty(),
-                MetricType::Rate => RateMetricValue::empty(),
-                MetricType::Percentage => PercentageMetricValue::empty(),
-                MetricType::Unknown => throw new \Exception('To be implemented'),
-            };
-        }
+    public function getDimensionStats(string $name, string $dimension): Collection
+    {
+        return $this->query()
+            ->withName($name)
+            ->groupByDimension($dimension)
+            ->get();
+    }
+
+    public function getCorrelatedMetrics(string $name, float $threshold = 0.7): Collection
+    {
+        return $this->query()
+            ->withName($name)
+            ->withCorrelatedMetrics($name, $threshold)
+            ->get();
+    }
+
+    public function getTimeSeriesData(
+        string $name,
+        Aggregation $window,
+        string $interval = '1 hour'
+    ): Collection {
+        return $this->query()
+            ->withName($name)
+            ->withWindow($window)
+            ->groupByTimeWindow($interval)
+            ->orderByTimestamp()
+            ->get();
+    }
+
+    public function getTopPercentileMetrics(
+        string $name,
+        float $percentile = 95
+    ): Collection {
+        return $this->query()
+            ->withName($name)
+            ->wherePercentile($percentile, '>=')
+            ->orderByValue('desc')
+            ->get();
     }
 }
