@@ -5,6 +5,7 @@ namespace Ninja\Metronome;
 use Carbon\Laravel\ServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\File;
+use InvalidArgumentException;
 use Laravel\Octane\Facades\Octane;
 use Ninja\Metronome\Console\Commands\ProcessMetricsCommand;
 use Ninja\Metronome\Console\Commands\PruneMetricsCommand;
@@ -14,6 +15,8 @@ use Ninja\Metronome\Metrics\Contracts\Discoverable;
 use Ninja\Metronome\Metrics\Registry;
 use Ninja\Metronome\Metrics\Storage\Contracts\MetricStorage;
 use Ninja\Metronome\Metrics\Storage\Contracts\StateStorage;
+use Ninja\Metronome\Metrics\Storage\MemoryMetricStorage;
+use Ninja\Metronome\Metrics\Storage\MemoryStateStorage;
 use Ninja\Metronome\Metrics\Storage\RedisMetricStorage;
 use Ninja\Metronome\Metrics\Storage\RedisStateStorage;
 use Ninja\Metronome\Processors\MetricProcessor;
@@ -35,17 +38,39 @@ final class MetronomeServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(MetricStorage::class, function () {
-            return new RedisMetricStorage(
-                prefix: config('metronome.prefix'),
-                connection: config('metronome.storage.metrics.ephemeral.connection')
-            );
+            if (config('metronome.storage.metrics.ephemeral.driver') === 'redis') {
+                return new RedisMetricStorage(
+                    prefix: config('metronome.prefix'),
+                    connection: config('metronome.storage.metrics.ephemeral.connection')
+                );
+            }
+
+            if (config('metronome.storage.metrics.ephemeral.driver') === 'memory') {
+                return new MemoryMetricStorage(
+                    prefix: config('metronome.prefix'),
+                    max: config('metronome.storage.metrics.ephemeral.memory.max_size', 10000)
+                );
+            }
+
+            throw new InvalidArgumentException('Invalid storage driver');
         });
 
         $this->app->singleton(StateStorage::class, function () {
-            return new RedisStateStorage(
-                prefix: config('metronome.prefix'),
-                connection: config('metronome.storage.state.connection')
-            );
+
+            if (config('metronome.storage.state.driver') === 'redis') {
+                return new RedisStateStorage(
+                    prefix: config('metronome.prefix'),
+                    connection: config('metronome.storage.state.connection')
+                );
+            }
+
+            if (config('metronome.storage.state.driver') === 'memory') {
+                return new MemoryStateStorage(
+                    prefix: config('metronome.prefix')
+                );
+            }
+
+            throw new InvalidArgumentException('Invalid storage driver');
         });
 
         $this->app->singleton(StateManager::class, function () {

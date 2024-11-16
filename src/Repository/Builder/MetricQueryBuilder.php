@@ -9,6 +9,7 @@ use Ninja\Metronome\Dto\Dimension;
 use Ninja\Metronome\Dto\DimensionCollection;
 use Ninja\Metronome\Enums\Aggregation;
 use Ninja\Metronome\Enums\MetricType;
+use Ninja\Metronome\Enums\Quantile;
 use Ninja\Metronome\Repository\Contracts\MetricQueryBuilder as QueryBuilder;
 use Ninja\Metronome\Repository\Dto\Metric;
 use Ninja\Metronome\Repository\Dto\MetricCriteria;
@@ -305,7 +306,7 @@ class MetricQueryBuilder implements QueryBuilder
 
     private function calculatePercentiles(): array
     {
-        $percentiles = [25, 50, 75, 90, 95, 99];
+        $percentiles = Quantile::scale();
         $results = [];
 
         foreach ($percentiles as $p) {

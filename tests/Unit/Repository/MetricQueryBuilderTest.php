@@ -4,7 +4,6 @@ namespace Tests\Unit\Repository;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
-use InvalidArgumentException;
 use Mockery;
 use Ninja\Metronome\Dto\Dimension;
 use Ninja\Metronome\Dto\DimensionCollection;
@@ -193,18 +192,49 @@ describe('metric grouping', function () {
 
 describe('joins', function () {
     beforeEach(function () {
+        // Mock para el join builder
         $mockJoinBuilder = Mockery::mock(Builder::class);
         $mockJoinBuilder->shouldReceive('on')
+            ->withArgs(function ($first, $operator, $second) {
+                return str_contains($first, 'timestamp') &&
+                    $operator === '=' &&
+                    str_contains($second, 'timestamp');
+            })
             ->andReturnSelf();
+
         $mockJoinBuilder->shouldReceive('where')
+            ->withArgs(function ($column, $operator, $value) {
+                return str_contains($column, 'name') &&
+                    $operator === '=' &&
+                    is_string($value);
+            })
             ->andReturnSelf();
+
+        // Mock para el query builder principal
+        $this->builder->shouldReceive('joins')->andReturn([]);
     });
 
     it('joins metrics with basic join', function () {
         $this->builder->shouldReceive('innerJoin')
             ->once()
-            ->withArgs(function ($table) {
-                return $table === 'metronome_metrics AS m2';
+            ->withArgs(function ($table, $callback) {
+                // Verificar la tabla
+                if ($table !== 'metronome_metrics as m2') {
+                    return false;
+                }
+
+                // Verificar que el callback es una closure
+                if (! ($callback instanceof \Closure)) {
+                    return false;
+                }
+
+                // La closure debería funcionar con nuestro mock
+                $mockJoinBuilder = Mockery::mock(Builder::class);
+                $mockJoinBuilder->shouldReceive('on')->andReturnSelf();
+                $mockJoinBuilder->shouldReceive('where')->andReturnSelf();
+                $callback($mockJoinBuilder);
+
+                return true;
             })
             ->andReturnSelf();
 
@@ -214,15 +244,39 @@ describe('joins', function () {
     it('joins metrics with custom alias', function () {
         $this->builder->shouldReceive('innerJoin')
             ->once()
-            ->withArgs(function ($table, $closure) {
-                return $table === 'metronome_metrics AS custom';
+            ->withArgs(function ($table, $callback) {
+                if ($table !== 'metronome_metrics as custom') {
+                    return false;
+                }
+
+                if (! ($callback instanceof \Closure)) {
+                    return false;
+                }
+
+                $mockJoinBuilder = Mockery::mock(Builder::class);
+                $mockJoinBuilder->shouldReceive('on')->andReturnSelf();
+                $mockJoinBuilder->shouldReceive('where')->andReturnSelf();
+                $callback($mockJoinBuilder);
+
+                return true;
             })
             ->andReturnSelf();
 
         $this->queryBuilder->joinMetrics('other_metric', 'custom');
     });
-});
 
+    it('joins multiple related metrics', function () {
+        $this->builder->shouldReceive('innerJoin')
+            ->twice()
+            ->withArgs(function ($table, $callback) {
+                return str_contains($table, 'metronome_metrics as m') &&
+                    $callback instanceof \Closure;
+            })
+            ->andReturnSelf();
+
+        $this->queryBuilder->joinRelatedMetrics(['metric1', 'metric2']);
+    });
+});
 describe('advanced filters', function () {
     it('filters by percentile', function () {
         $this->builder->shouldReceive('count')->once()->andReturn(100);
@@ -246,14 +300,82 @@ describe('advanced filters', function () {
     });
 
     it('adds change rate calculation', function () {
+        $this->builder->shouldReceive('raw')
+            ->with('((computed - LAG(computed) OVER (ORDER BY timestamp)) / LAG(computed) OVER (ORDER BY timestamp)) * 100 as change_rate')
+            ->andReturn(new Expression('change_rate_expression'));
+
         $this->builder->shouldReceive('addSelect')
-            ->withArgs(function ($columns) {
-                return is_array($columns) &&
-                    $columns[1] instanceof Expression &&
-                    str_contains($columns[1]->getValue(), 'LAG(computed)');
+            ->once()
+            ->withArgs(function ($arg) {
+                return $arg instanceof Expression;
             })
             ->andReturnSelf();
 
         $this->queryBuilder->withChangeRate();
+    });
+
+    it('builds metric stats query', function () {
+        $this->builder->shouldReceive('count')
+            ->andReturn(100);
+
+        $this->builder->shouldReceive('avg')
+            ->once()
+            ->andReturn(50.5);
+
+        $this->builder->shouldReceive('min')
+            ->once()
+            ->andReturn(1.0);
+
+        $this->builder->shouldReceive('max')
+            ->once()
+            ->andReturn(100.0);
+
+        $this->builder->shouldReceive('selectRaw')
+            ->once()
+            ->with('STDDEV(computed) as stddev')
+            ->andReturnSelf();
+
+        $this->builder->shouldReceive('value')->once()
+            ->with('stddev')
+            ->andReturn('10.5');
+
+        $this->builder->shouldReceive('selectRaw')
+            ->with(Mockery::pattern('/PERCENTILE_CONT/'))
+            ->andReturnSelf();
+
+        $this->builder->shouldReceive('value')
+            ->with(Mockery::pattern('/p\d+/'))
+            ->andReturn('50.0');
+
+        // Mock para calculateHistogram
+        $this->builder->shouldReceive('selectRaw')
+            ->with('MIN(computed) as min, MAX(computed) as max')
+            ->andReturnSelf();
+
+        $this->builder->shouldReceive('first')
+            ->andReturn((object) [
+                'min' => 0,
+                'max' => 100,
+            ]);
+
+        $this->builder->shouldReceive('whereBetween')
+            ->andReturnSelf();
+        $this->builder->shouldReceive('selectRaw')
+            ->with(Mockery::pattern('/COUNT.*AVG.*MIN.*MAX.*STDDEV/'))
+            ->andReturnSelf();
+
+        $this->builder->shouldReceive('first')
+            ->andReturn((object) [
+                'count' => 100,
+                'avg' => 50.5,
+                'min' => 1.0,
+                'max' => 100.0,
+                'stddev' => 10.5,
+            ]);
+
+        $stats = $this->queryBuilder->stats();
+
+        expect($stats)
+            ->toHaveKeys(['count', 'avg', 'min', 'max', 'stddev', 'percentiles', 'histogram']);
     });
 });
