@@ -10,7 +10,7 @@ it('creates dimension from constructor', function () {
 });
 
 it('creates dimension from array', function () {
-    $data = ['name' => 'host', 'value' => 'localhost'];
+    $data = ['host' => 'localhost'];
     $dimension = Dimension::from($data);
 
     expect($dimension->name)->toBe('host')
@@ -18,7 +18,7 @@ it('creates dimension from array', function () {
 });
 
 it('creates dimension from json', function () {
-    $json = '{"name":"host","value":"localhost"}';
+    $json = '{"host":"localhost"}';
     $dimension = Dimension::from($json);
 
     expect($dimension->name)->toBe('host')
@@ -38,8 +38,7 @@ it('converts to array', function () {
     $dimension = new Dimension('host', 'localhost');
 
     expect($dimension->array())->toEqual([
-        'name' => 'host',
-        'value' => 'localhost',
+        'host' => 'localhost',
     ]);
 });
 
@@ -51,7 +50,7 @@ it('converts to label', function () {
 
 it('serializes to json', function () {
     $dimension = new Dimension('host', 'localhost');
-    $expected = '{"name":"host","value":"localhost"}';
+    $expected = '{"host":"localhost"}';
 
     expect($dimension->json())->toBe($expected)
         ->and(json_encode($dimension))->toBe($expected);

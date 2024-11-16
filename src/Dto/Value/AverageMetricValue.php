@@ -17,6 +17,19 @@ final class AverageMetricValue extends AbstractMetricValue
         ]);
     }
 
+    public static function from(string|array $data): self
+    {
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+        }
+
+        return new self(
+            value: $data['value'],
+            sum: $data['metadata']['sum'],
+            count: $data['metadata']['count']
+        );
+    }
+
     protected function validate(): void
     {
         if (! isset($this->metadata['sum'])) {

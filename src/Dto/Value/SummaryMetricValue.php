@@ -19,6 +19,19 @@ final class SummaryMetricValue extends AbstractMetricValue
         ]);
     }
 
+    public static function from(string|array $data): self
+    {
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+        }
+
+        return new self(
+            value: $data['value'],
+            quantiles: $data['metadata']['quantiles'],
+            count: $data['metadata']['count'],
+            sum: $data['metadata']['sum']
+        );
+    }
     protected function validate(): void
     {
         if (empty($this->metadata['quantiles'])) {

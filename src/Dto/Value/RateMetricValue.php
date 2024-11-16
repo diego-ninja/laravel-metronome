@@ -14,6 +14,19 @@ final class RateMetricValue extends AbstractMetricValue
         ]);
     }
 
+    public static function from(string|array $data): self
+    {
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+        }
+
+        return new self(
+            value: $data['value'],
+            interval: $data['metadata']['interval'],
+            count: $data['metadata']['count']
+        );
+    }
+
     protected function validate(): void
     {
         if ($this->value < 0) {

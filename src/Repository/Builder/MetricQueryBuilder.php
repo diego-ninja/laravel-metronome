@@ -54,7 +54,7 @@ class MetricQueryBuilder implements QueryBuilder
 
         if ($criteria->dimensions) {
             foreach ($criteria->dimensions as $dimension) {
-                $this->query->where('dimensions', 'like', "%{$dimension->name}:{$dimension->value}%");
+                $this->query->where('dimensions', 'like', sprintf('%%"%s": "%s"%%', $dimension->name, $dimension->value));
             }
         }
 

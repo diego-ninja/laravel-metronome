@@ -11,6 +11,18 @@ final class GaugeMetricValue extends AbstractMetricValue
         parent::__construct($value, ['timestamp' => $timestamp ?? time()]);
     }
 
+    public static function from(string|array $data): self
+    {
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+        }
+
+        return new self(
+            value: $data['value'],
+            timestamp: $data['metadata']['timestamp'] ?? now()->timestamp
+        );
+    }
+
     protected function validate(): void
     {
         if ($this->value < 0) {

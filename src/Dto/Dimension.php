@@ -2,7 +2,9 @@
 
 namespace Ninja\Metronome\Dto;
 
-final readonly class Dimension implements \JsonSerializable
+use JsonSerializable;
+
+final readonly class Dimension implements JsonSerializable
 {
     public function __construct(
         public string $name,
@@ -11,10 +13,7 @@ final readonly class Dimension implements \JsonSerializable
 
     public function array(): array
     {
-        return [
-            'name' => $this->name,
-            'value' => $this->value,
-        ];
+        return $this->asLabel();
     }
 
     public function asLabel(): array
@@ -33,8 +32,8 @@ final readonly class Dimension implements \JsonSerializable
         }
 
         return new self(
-            name: $data['name'],
-            value: $data['value'],
+            name: array_key_first($data),
+            value: array_values($data)[0],
         );
     }
 
